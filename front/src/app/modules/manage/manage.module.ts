@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { ManageRoutingModule } from './manage-routing.module';
 import { PersonManagerComponent } from './components/person-manager/person-manager.component';
-
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 @NgModule({
   declarations: [
@@ -11,7 +11,8 @@ import { PersonManagerComponent } from './components/person-manager/person-manag
   ],
   imports: [
     CommonModule,
-    ManageRoutingModule
+    ManageRoutingModule,
+    MatFormFieldModule
   ]
 })
 export class ManageModule { }
