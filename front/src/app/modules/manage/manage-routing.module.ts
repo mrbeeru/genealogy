@@ -1,14 +1,13 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-
-import { DefaultviewComponent } from './components/defaultview/defaultview.component';
+import { PersonManagerComponent } from './components/person-manager/person-manager.component';
 
 const routes: Routes = [
-  {path: 'defaultview', component: DefaultviewComponent}
+  {path:"", component: PersonManagerComponent},
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class FamilyTreeRoutingModule { }
+export class ManageRoutingModule { }

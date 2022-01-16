@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { PersonApiService, PersonV2 } from '../../../services/api/person.service';
+import { PersonApiService, PersonV2 } from '../../../../services/api/person.service';
 
 @Component({
   selector: 'app-defaultview',
@@ -30,7 +30,7 @@ export class DefaultviewComponent implements OnInit {
     let origin = this.persons[0];
     this.buildGraph(origin);
 
-    this.myCanvas.nativeElement.width = this.graph.width + 5;
+    this.myCanvas.nativeElement.width = this.graph.width + 5 + 100;
     this.myCanvas.nativeElement.height = this.graph.height + 3;
 
     this.context = this.myCanvas.nativeElement.getContext('2d');
