@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { PersonApiService, PersonV2 } from '../../../../services/api/person.service';
+import { PersonApiService, PersonV2 } from '../../../services/api/person.service';
 
 @Component({
   selector: 'app-defaultview',
@@ -19,7 +19,6 @@ export class DefaultviewComponent implements OnInit {
     this.personService.getAllPersonsAsync().then(x => {
       this.plswork(x);
     });
-
   }
 
   plswork(x: PersonV2[]) {

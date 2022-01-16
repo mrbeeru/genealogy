@@ -1,6 +1,6 @@
 <div class="container">
     <div class="row">
-        <div class="col d-flex justify-content-center p-5">
+        <div class="col d-flex justify-content-center pt-5 pr-5 pl-5">
             <mat-form-field appearance="fill" class="w-100">
                 <mat-label>Search</mat-label>
                 <input matInput (input)="search($event)">
@@ -9,9 +9,10 @@
             </mat-form-field>
         </div>
     </div>
+
     <div class="row p-5">
         <div class="col-lg-4 col-sm-6 " *ngFor='let person of filteredPersons'>
-            <div class="p-1">
+            <div class="p-2">
                 <div>
                     {{person.lastName}} {{person.firstName}}
                 </div>

@@ -1,13 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
 import { PersonApiService, PersonV2 } from 'src/app/services/api/person.service';
 
 @Component({
-  selector: 'app-person-manager',
-  templateUrl: './person-manager.component.html',
-  styleUrls: ['./person-manager.component.scss']
+  selector: 'app-members',
+  templateUrl: './members.component.html',
+  styleUrls: ['./members.component.scss']
 })
-export class PersonManagerComponent implements OnInit {
+export class MembersComponent implements OnInit {
 
   persons : PersonV2[] = [];
   filteredPersons: PersonV2[] = [];

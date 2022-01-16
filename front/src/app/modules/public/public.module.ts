@@ -1,22 +1,23 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { ManageRoutingModule } from './manage-routing.module';
-import { PersonManagerComponent } from './components/person-manager/person-manager.component';
+import { PublicRoutingModule } from './public-routing.module';
+import { MembersComponent } from './members/members.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import {MatIconModule} from '@angular/material/icon';
+import { MatIconModule } from '@angular/material/icon';
+
 
 @NgModule({
   declarations: [
-    PersonManagerComponent
+    MembersComponent
   ],
   imports: [
     CommonModule,
-    ManageRoutingModule,
+    PublicRoutingModule,
     MatFormFieldModule,
     MatInputModule,
     MatIconModule
   ]
 })
-export class ManageModule { }
+export class PublicModule { }
