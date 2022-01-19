@@ -8,36 +8,61 @@ import { PersonApiService, PersonV2 } from 'src/app/services/api/person.service'
 })
 export class MembersComponent implements OnInit {
 
-  persons : PersonV2[] = [];
+  sortOptions = ["Name (Up)", "Name (Down)", "Birth Date (Up)", "Birth Date (Down)"]
+  selectedSortOption: string;
+
+  persons: PersonV2[] = [];
   filteredPersons: PersonV2[] = [];
 
-  constructor(private personService: PersonApiService) 
-  {
+  constructor(private personService: PersonApiService) {
+    this.selectedSortOption = this.sortOptions[0];
   }
 
   async ngOnInit(): Promise<void> {
     let persons = await this.personService.getAllPersonsAsync();
-    persons.sort((a,b) => a.lastName < b.lastName ? -1 : 1)
+    this.sortPersons(persons, this.selectedSortOption);
 
     this.persons = persons;
     this.filteredPersons = persons;
   }
 
 
-  search($event : any)
-  {
-    let searchValue : string = $event.target.value;
+  search($event: any) {
+    let searchValue: string = $event.target.value;
 
-    if (searchValue === '')
-    {
+    if (searchValue === '') {
       this.filteredPersons = this.persons;
       return;
     }
 
     searchValue = searchValue.replace(" ", "");
 
-    this.filteredPersons = this.persons.filter(x => 
+    this.filteredPersons = this.persons.filter(x =>
       (x.lastName.toLowerCase() + x.firstName.toLowerCase()).includes(searchValue) ||
       (x.firstName.toLowerCase() + x.lastName.toLowerCase()).includes(searchValue))
+  }
+
+  sortChanged(sortOption: any) {
+    this.sortPersons(this.filteredPersons, sortOption)
+  }
+
+  sortPersons(persons: PersonV2[], sortOption: string) {
+    switch (sortOption) {
+      case "Name (Up)":
+        persons.sort((a, b) => a.lastName + a.firstName < b.lastName + b.firstName ? -1 : 1)
+        break;
+
+      case "Name (Down)":
+        persons.sort((a, b) => a.lastName + a.firstName < b.lastName + b.firstName ? 1 : -1)
+        break;
+
+      case "Birth Date (Up)":
+        persons.sort((a, b) => a.birthDate.year < b.birthDate.year ? -1 : 1)
+        break;
+
+      case "Birth Date (Down)":
+        persons.sort((a, b) => a.birthDate.year < b.birthDate.year ? 1 : -1)
+        break;
+    }
   }
 }

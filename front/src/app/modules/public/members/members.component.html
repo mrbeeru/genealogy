@@ -1,12 +1,21 @@
 <div class="container">
     <div class="row">
-        <div class="col d-flex justify-content-center pt-5 pr-5 pl-5">
+        <div class="col-8 d-flex justify-content-center pt-5 pr-5 pl-5">
             <mat-form-field appearance="fill" class="w-100">
                 <mat-label>Search</mat-label>
                 <input matInput (input)="search($event)">
                 <mat-icon matSuffix>search</mat-icon>
                 <mat-hint>Showing {{filteredPersons.length}} / {{persons.length}} entries</mat-hint>
             </mat-form-field>
+        </div>
+
+        <div class="col-2 d-flex justify-content-center pt-5 pr-5 pl-5">
+            <mat-form-field appearance="fill">
+                <mat-label>Sort</mat-label>
+                <mat-select [(value)]="selectedSortOption" (selectionChange)="sortChanged($event.value)">
+                    <mat-option *ngFor="let sortOption of sortOptions" value="{{sortOption}}">{{sortOption}}</mat-option>
+                </mat-select>
+              </mat-form-field>
         </div>
     </div>
 
