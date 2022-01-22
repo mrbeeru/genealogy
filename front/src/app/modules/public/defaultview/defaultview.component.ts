@@ -17,16 +17,18 @@ export class DefaultviewComponent implements OnInit {
 
   ngOnInit(): void {
     this.personService.getAllPersonsAsync().then(x => {
-      this.plswork(x);
+      this.draw(x);
     });
   }
 
-  plswork(x: PersonV2[]) {
+  draw(x: PersonV2[]) {
     this.persons = x;
-    this.startYear = Math.min(...this.persons.map(x => x.birthDate?.year))
-    this.buildPersonsObject(this.persons);
 
+    this.persons.sort((a,b) => a.birthDate.year < b.birthDate.year ? -1 : 1)
+    this.startYear = this.persons[0].birthDate.year;
     let origin = this.persons[0];
+
+    this.buildPersonsObject(this.persons);
     this.buildGraph(origin);
 
     this.myCanvas.nativeElement.width = this.graph.width + 5 + 100;

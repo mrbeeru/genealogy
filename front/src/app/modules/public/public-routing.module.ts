@@ -5,7 +5,7 @@ import { MembersComponent } from './members/members.component';
 
 const routes: Routes = [
   {path: "members", component: MembersComponent},
-  {path: "graph", component: DefaultviewComponent}
+  {path: "", component: DefaultviewComponent}
 ];
 
 @NgModule({
