@@ -1,6 +1,8 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { PersonApiService, PersonV2 } from '../../../services/api/person.service';
 
+import { Svg, SVG as svgjs} from '@svgdotjs/svg.js';
+
 @Component({
   selector: 'app-defaultview',
   templateUrl: './defaultview.component.html',
@@ -8,8 +10,8 @@ import { PersonApiService, PersonV2 } from '../../../services/api/person.service
 })
 export class DefaultviewComponent implements OnInit {
 
-  @ViewChild('myCanvas') private myCanvas: ElementRef = {} as ElementRef;
-  context!: CanvasRenderingContext2D;
+  //@ViewChild('myCanvas') private myCanvas: ElementRef = {} as ElementRef;
+  //context!: CanvasRenderingContext2D;
 
   constructor(
     private personService: PersonApiService
@@ -31,11 +33,12 @@ export class DefaultviewComponent implements OnInit {
     this.buildPersonsObject(this.persons);
     this.buildGraph(origin);
 
-    this.myCanvas.nativeElement.width = this.graph.width + 5 + 100;
-    this.myCanvas.nativeElement.height = this.graph.height + 3;
+    const width = this.graph.width + 5 + 100;
+    const height = this.graph.height + 3;
+    const context = svgjs().addTo("#test").size(width, height);
 
-    this.context = this.myCanvas.nativeElement.getContext('2d');
-    this.drawGraph(this.graph);
+    //this.context = this.myCanvas.nativeElement.getContext('2d');
+    this.drawGraph(context, this.graph);
   }
 
 
@@ -106,7 +109,7 @@ export class DefaultviewComponent implements OnInit {
       color: "black",
       size: this.segmentTextSize,
       x: textOffset,
-      y: this.globalYOffset + (this.segmentHeight + this.segmentTextSize / 2) / 2 + 1
+      y: this.globalYOffset - 1
     }
 
     //draw initial shorter segment
@@ -153,24 +156,21 @@ export class DefaultviewComponent implements OnInit {
     return output;
   }
 
-  drawGraph(graph: any) {
+  drawGraph(context: Svg, graph: any) {
     graph.shapes.forEach((shape: Shape) => {
       shape.lifeSegments.forEach((segment: LifeSegment) => {
-        this.context.fillStyle = shape.person.gender == "f" ? "#ffd0e6" : "#aedae7";
-        this.context.fillRect(segment.x, segment.y, segment.width, segment.height);
+        const fillColor = shape.person.gender == "f" ? "#ffd0e6" : "#aedae7";
+        context.rect(segment.width, segment.height).move(segment.x, segment.y).fill(fillColor);
       });
 
-      this.drawRelations(shape, "gray")
-      this.drawNameText(shape.person.firstName + " " + shape.person.lastName, "black", shape.textObject.size, shape.textObject.x, shape.textObject.y)
+      this.drawRelations(context, shape, "gray")
+      this.drawNameText(context, `${shape.person.firstName} ${shape.person.lastName}`, "black", shape.textObject.size, shape.textObject.x, shape.textObject.y)
     });
   }
 
-  drawRelations(shape: Shape, color: string) {
+  drawRelations(context: Svg, shape: Shape, color: string) {
     if (shape.person == null || shape.person.fatherId == null || shape.person.motherId == null)
-      return;
-
-    let prevcolor = this.context.fillStyle;
-    this.context.fillStyle = color;
+     return;
 
     let fatherShape = this.personToShapeMap.get(this.personMap[shape.person.fatherId]);
     let motherShape = this.personToShapeMap.get(this.personMap[shape.person.motherId]);
@@ -181,31 +181,17 @@ export class DefaultviewComponent implements OnInit {
     let heightFather = y - (fatherShape?.lifeSegments[0].y ?? 0)
     let yMother = y - heightMother + this.segmentHeight / 2
     let yFather = y - heightFather + this.segmentHeight / 2
-    let width = 2
 
-    this.context.fillRect(x, y, width, -Math.max(heightMother, heightFather) + this.segmentHeight / 2)
-
+    //draw relation line
+    context.line(x,y - Math.max(heightMother, heightFather) + this.segmentHeight / 2, x, y).stroke({ color: color, width: 2, linecap: 'round' })
+    
     //draw bumps
-    this.context.beginPath();
-    this.context.arc(x + 1, yMother, 3, 0, 2 * Math.PI);
-    this.context.fill();
-    this.context.closePath();
-
-    this.context.beginPath();
-    this.context.arc(x + 1, yFather, 3, 0, 2 * Math.PI);
-    this.context.fill();
-    this.context.closePath();
-
-    this.context.fillStyle = prevcolor;
+    context.circle(6).move(x - 3, yMother - 3).fill(color)
+    context.circle(6).move(x - 3, yFather - 3).fill(color)
   }
 
-  drawNameText(text: string, color: string, size: number, x: number, y: number) {
-    let previousColor = this.context.fillStyle;
-
-    this.context.font = "bold " + size + "px Arial";
-    this.context.fillStyle = color;
-    this.context.fillText(text, x, y);
-    this.context.fillStyle = previousColor;
+  drawNameText(context: Svg, text: string, color: string, size: number, x: number, y: number) {
+    context.text(text).move(x,y).font({ fill: color, size: size, weight: '500'});
   }
 }
 

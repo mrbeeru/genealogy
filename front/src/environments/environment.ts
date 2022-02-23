@@ -4,7 +4,8 @@
 
 export const environment = {
   production: false,
-  appUrl: 'http://localhost:5046/api'
+  //appUrl: 'http://localhost:5046/api'
+  appUrl: 'http://anbu2.go.ro:10010/api'
 };
 
 /*
