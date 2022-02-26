@@ -1,3 +1,35 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col d-flex" style="overflow: auto;">
+            <div id="test" ></div>
+        </div>
+    </div>
+</div>
 
-<div id="test">
+
+
+
+<div class="d-flex" style="position: fixed; right: 0; top: 0">
+    <div> 
+        <button mat-raised-button (click)="drawer.toggle()"> 
+            <mat-icon *ngIf="drawer.opened">menu_close</mat-icon> 
+            <mat-icon *ngIf="!drawer.opened">menu_open</mat-icon> 
+        </button>
+    </div>  
+    <mat-drawer-container style="height: 100vh; background-color: white;">
+        <mat-drawer #drawer position="end" mode="side" opened="true">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col">
+                        <mat-label>Text size</mat-label>
+                        <mat-slider class="w-100" [(ngModel)]="segmentTextSize" (change)="redraw()"  thumbLabel tickInterval="1" step="1" min="10" max="32" aria-label="units"> </mat-slider>
+                        <mat-label>Pixels per segment</mat-label>
+                        <mat-slider class="w-100" [(ngModel)]="segmentLength" (change)="redraw()"  thumbLabel tickInterval="5" step="5" min="20" max="200" aria-label="units"> </mat-slider>
+                        <mat-label>Years per segment</mat-label>
+                        <mat-slider class="w-100" [(ngModel)]="granularity" (change)="redraw()"  thumbLabel  step="5" min="5" max="100" aria-label="units"> </mat-slider>
+                    </div>
+                </div>
+            </div>
+        </mat-drawer>
+    </mat-drawer-container>
 </div>

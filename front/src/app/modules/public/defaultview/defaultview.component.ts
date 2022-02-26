@@ -19,26 +19,29 @@ export class DefaultviewComponent implements OnInit {
 
   ngOnInit(): void {
     this.personService.getAllPersonsAsync().then(x => {
+
+      this.persons = x;
+      this.persons.sort((a,b) => a.birthDate.year < b.birthDate.year ? -1 : 1)
+      this.startYear = this.persons[0].birthDate.year;
+      this.origin = this.persons[0];
+
       this.draw(x);
     });
   }
 
   draw(x: PersonV2[]) {
-    this.persons = x;
-
-    this.persons.sort((a,b) => a.birthDate.year < b.birthDate.year ? -1 : 1)
-    this.startYear = this.persons[0].birthDate.year;
-    let origin = this.persons[0];
+    if (this.origin == null)
+      throw new Error("Origin is null");
 
     this.buildPersonsObject(this.persons);
-    this.buildGraph(origin);
+    this.buildGraph(this.origin);
 
     const width = this.graph.width + 5 + 100;
     const height = this.graph.height + 3;
-    const context = svgjs().addTo("#test").size(width, height);
+    this.context = svgjs().addTo("#test").size(width, height);
 
     //this.context = this.myCanvas.nativeElement.getContext('2d');
-    this.drawGraph(context, this.graph);
+    this.drawGraph(this.context, this.graph);
   }
 
 
@@ -48,18 +51,31 @@ export class DefaultviewComponent implements OnInit {
     });
   }
 
+
+  initializeGlobals(){
+    this.personToShapeMap = new Map<PersonV2, Shape>();
+    this.personMap = {};
+    this.graph = { width: 0, height: 0, shapes: [] };
+    this.globalXOffset = 5;
+    this.globalYOffset = 5;
+
+    this.buildPersonsObject(this.persons);
+  }
+
+  context? : Svg = undefined;
+
   personMap: any = {};
   persons: PersonV2[] = [];
-
   personToShapeMap = new Map<PersonV2, Shape>();
+  origin?: PersonV2;
 
   segmentLength = 100;
   segmentHeight = 16;
   segmentSpacing = 2;
-  segmentTextSize = 11;
+  segmentTextSize : number = 11;
   descendantSpacing = 30;
   globalXOffset = 5;
-  globalYOffset = 6;
+  globalYOffset = 5;
   startYear = 0;
   granularity = 10;
 
@@ -70,6 +86,11 @@ export class DefaultviewComponent implements OnInit {
   buildGraph(person: PersonV2) {
     if (this.graph.shapes == null)
       this.graph.shapes = []
+
+    if (person == null)
+      return;
+
+    console.log(person)
 
     let shape = this.buildShapes(person);
     this.graph.shapes.push(shape)
@@ -95,6 +116,7 @@ export class DefaultviewComponent implements OnInit {
           this.buildGraph(child);
       });
   }
+
 
   buildShapes(person: PersonV2): Shape {
     let born = person.birthDate.year;
@@ -193,6 +215,22 @@ export class DefaultviewComponent implements OnInit {
   drawNameText(context: Svg, text: string, color: string, size: number, x: number, y: number) {
     context.text(text).move(x,y).font({ fill: color, size: size, weight: '500'});
   }
+
+  redraw(){
+    this.context?.clear();
+
+    this.initializeGlobals();
+    this.buildGraph(this.origin!);
+
+    const width = this.graph.width + 5 + 100;
+    const height = this.graph.height + 3;
+
+    this.context?.size(width, height);
+    this.drawGraph(this.context!, this.graph);
+  }
+
+
+  //#endregion
 }
 
 interface LifeSegment {
