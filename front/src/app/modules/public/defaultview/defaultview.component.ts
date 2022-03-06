@@ -36,11 +36,10 @@ export class DefaultviewComponent implements OnInit {
     this.buildPersonsObject(this.persons);
     this.buildGraph(this.origin);
 
-    const width = this.graph.width + 5 + 100;
-    const height = this.graph.height + 3;
+    const width = Math.max(this.graph.width + 5 + 100, window.innerWidth);
+    const height = Math.max(this.graph.height + 3, window.innerHeight);
     this.context = svgjs().addTo("#test").size(width, height);
 
-    //this.context = this.myCanvas.nativeElement.getContext('2d');
     this.drawGraph(this.context, this.graph);
   }
 
@@ -55,7 +54,7 @@ export class DefaultviewComponent implements OnInit {
   initializeGlobals(){
     this.personToShapeMap = new Map<PersonV2, Shape>();
     this.personMap = {};
-    this.graph = { width: 0, height: 0, shapes: [] };
+    this.graph = { width: 0, height: 0, shapes: [], xOffset: this.graph.xOffset, yOffset: this.graph.yOffset };
     this.globalXOffset = 5;
     this.globalYOffset = 5;
 
@@ -69,7 +68,7 @@ export class DefaultviewComponent implements OnInit {
   personToShapeMap = new Map<PersonV2, Shape>();
   origin?: PersonV2;
 
-  segmentLength = 100;
+  segmentLength = 50;
   segmentHeight = 16;
   segmentSpacing = 2;
   segmentTextSize : number = 11;
@@ -77,10 +76,15 @@ export class DefaultviewComponent implements OnInit {
   globalXOffset = 5;
   globalYOffset = 5;
   startYear = 0;
-  granularity = 10;
+  resolution : number = 10;
 
-  graph: Graph = { width: 0, height: 0, shapes: [] };
-
+  graph: Graph = { 
+    width: 0, 
+    height: 0, 
+    shapes: [],
+    xOffset: 0,
+    yOffset: 0 ,
+  };
 
 
   buildGraph(person: PersonV2) {
@@ -89,8 +93,6 @@ export class DefaultviewComponent implements OnInit {
 
     if (person == null)
       return;
-
-    console.log(person)
 
     let shape = this.buildShapes(person);
     this.graph.shapes.push(shape)
@@ -122,7 +124,7 @@ export class DefaultviewComponent implements OnInit {
     let born = person.birthDate.year;
     let died = person.deathDate?.year ?? new Date().getUTCFullYear();
 
-    let xOffset = (born - this.startYear) / this.granularity * this.segmentLength + this.segmentSpacing * (Math.floor((born - (Math.floor(this.startYear / this.granularity) * this.granularity)) / this.granularity)) + 5;
+    let xOffset = (born - this.startYear) / this.resolution * this.segmentLength + this.segmentSpacing * (Math.floor((born - (Math.floor(this.startYear / this.resolution) * this.resolution)) / this.resolution)) + 5;
     let textOffset = xOffset + 5;
 
     let segments: LifeSegment[] = [];
@@ -134,29 +136,21 @@ export class DefaultviewComponent implements OnInit {
       y: this.globalYOffset - 1
     }
 
-    //draw initial shorter segment
-    if (born % this.granularity != 0 || died - born < this.granularity) {
-      let firstSegment = Math.min((this.granularity - born % this.granularity), died - born) / this.granularity * this.segmentLength;
-      segments.push({ x: xOffset, y: this.globalYOffset, width: firstSegment, height: this.segmentHeight })
-      xOffset += this.segmentSpacing + firstSegment;
-    }
-
+    //draw first segment
+    let firstSegment = Math.min((this.resolution - born % this.resolution), died - born) / this.resolution * this.segmentLength;
+    segments.push({ x: xOffset, y: this.globalYOffset, width: firstSegment, height: this.segmentHeight })
+    xOffset += this.segmentSpacing + firstSegment;
+ 
     //draw full segments
-    for (let year = born + (this.granularity - born % this.granularity) + this.granularity; year <= died; year += this.granularity) {
+    for (let year = born + this.resolution - (born%this.resolution); year < died - this.resolution; year += this.resolution ){
       segments.push({ x: xOffset, y: this.globalYOffset, width: this.segmentLength, height: this.segmentHeight })
       xOffset += this.segmentSpacing + this.segmentLength;
     }
 
-    //an extra wtf??
-    if (born % 10 == 0) {
-      segments.push({ x: xOffset, y: this.globalYOffset, width: this.segmentLength, height: this.segmentHeight })
-      xOffset += this.segmentSpacing + this.segmentLength;
-    }
-
-    //draw last
-    if (died - born + born % this.granularity > this.granularity) {
-      segments.push({ x: xOffset, y: this.globalYOffset, width: (died % this.granularity) / this.granularity * this.segmentLength, height: this.segmentHeight })
-      xOffset += (died % this.granularity) / this.granularity * this.segmentLength
+    //draw last segment
+    if (died - born + born % this.resolution > this.resolution) {
+     segments.push({ x: xOffset, y: this.globalYOffset, width: (died % this.resolution) / this.resolution * this.segmentLength, height: this.segmentHeight })
+     xOffset += (died % this.resolution) / this.resolution * this.segmentLength
     }
 
     this.globalYOffset += this.segmentHeight + 2;
@@ -213,7 +207,7 @@ export class DefaultviewComponent implements OnInit {
   }
 
   drawNameText(context: Svg, text: string, color: string, size: number, x: number, y: number) {
-    context.text(text).move(x,y).font({ fill: color, size: size, weight: '500'});
+    var txt = context.text(text).move(x,y).font({ fill: color, size: size, weight: '500'});
   }
 
   redraw(){
@@ -222,13 +216,64 @@ export class DefaultviewComponent implements OnInit {
     this.initializeGlobals();
     this.buildGraph(this.origin!);
 
-    const width = this.graph.width + 5 + 100;
-    const height = this.graph.height + 3;
+    const width = Math.max(this.graph.width + 5 + 100, window.innerWidth);
+    const height = Math.max(this.graph.height + 3, window.innerHeight);
+
+    
 
     this.context?.size(width, height);
     this.drawGraph(this.context!, this.graph);
   }
 
+  resolutionCmpWith(x:any, y:any){
+    return x == y;
+  }
+
+
+  zoom(event: any){
+    //console.log(event)
+    //this.view.scale += this.view.scale * 0.01 * (event.deltaY < 0 ? 1 : -1);
+  
+  }
+
+  isDraggin = false;
+  originPos = {a: 0, b:0}
+  lastDraw = Date.now()
+
+  mouseMove(event:any)
+  {
+    if(this.isDraggin)
+    {
+      let now = Date.now();
+
+      //try 240 transforms per second
+      if (now - this.lastDraw > 4)
+      {
+        this.context?.transform({
+          translateX: this.graph.xOffset + event.clientX - this.originPos.a,
+          translateY: this.graph.yOffset + event.clientY - this.originPos.b,
+        })
+
+        this.lastDraw = now;
+      }
+    }
+  }
+
+  mouseDown(event:any)
+  {
+    this.isDraggin=true;
+
+    this.originPos.a = event.clientX
+    this.originPos.b = event.clientY
+  }
+  
+  mouseUp(event:any)
+  {
+    this.isDraggin=false;
+
+    this.graph.xOffset = this.graph.xOffset - this.originPos.a + event.clientX
+    this.graph.yOffset = this.graph.yOffset -this.originPos.b + event.clientY
+  }
 
   //#endregion
 }
@@ -257,6 +302,8 @@ interface Shape {
 interface Graph {
   width: number,
   height: number,
+  xOffset: number,
+  yOffset: number,
   shapes: Shape[]
 }
 

@@ -12,6 +12,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { DefaultviewComponent } from './defaultview/defaultview.component';
 import {MatSliderModule} from '@angular/material/slider';
 import { FormsModule } from '@angular/forms';
+import {DragDropModule} from '@angular/cdk/drag-drop';
 
 @NgModule({
   declarations: [
@@ -28,7 +29,8 @@ import { FormsModule } from '@angular/forms';
     MatSidenavModule,
     MatButtonModule,
     MatSliderModule,
-    FormsModule
+    FormsModule,
+    DragDropModule
   ]
 })
 export class PublicModule { }

@@ -1,11 +1,7 @@
-<div class="container-fluid">
-    <div class="row">
-        <div class="col d-flex" style="overflow: auto;">
-            <div id="test" ></div>
-        </div>
-    </div>
-</div>
 
+<div style="overflow: hidden; position: fixed;">
+    <div (mousewheel)="zoom($event)" (mousemove)="mouseMove($event)" (mousedown)="mouseDown($event)" (mouseup)="mouseUp($event)" id="test" style="user-select: none; width: 100vw; height: 100vh" [ngStyle]="{'cursor': isDraggin ? 'move' : 'default'}"></div>
+</div>
 
 
 
@@ -21,12 +17,23 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col">
-                        <mat-label>Text size</mat-label>
+                        <mat-label style="white-space: nowrap;">Text size: {{segmentTextSize}}</mat-label>
                         <mat-slider class="w-100" [(ngModel)]="segmentTextSize" (change)="redraw()"  thumbLabel tickInterval="1" step="1" min="10" max="32" aria-label="units"> </mat-slider>
-                        <mat-label>Pixels per segment</mat-label>
-                        <mat-slider class="w-100" [(ngModel)]="segmentLength" (change)="redraw()"  thumbLabel tickInterval="5" step="5" min="20" max="200" aria-label="units"> </mat-slider>
-                        <mat-label>Years per segment</mat-label>
-                        <mat-slider class="w-100" [(ngModel)]="granularity" (change)="redraw()"  thumbLabel  step="5" min="5" max="100" aria-label="units"> </mat-slider>
+                        <mat-label style="white-space: nowrap;">Pixels per segment: {{segmentLength}}</mat-label>
+                        <mat-slider class="w-100" [(ngModel)]="segmentLength" (change)="redraw()"  thumbLabel tickInterval="5" step="5" min="5" max="200" aria-label="units"> </mat-slider>
+                        <!-- <mat-label style="white-space: nowrap;">Years per segment: {{resolution}}</mat-label>
+                        <mat-slider class="w-100" [(ngModel)]="resolution" (change)="redraw()"  thumbLabel  step="5" min="5" max="100" aria-label="units"> </mat-slider>
+                     -->
+                        <mat-form-field appearance="fill">
+                            <mat-label>Select an option</mat-label>
+                            <mat-select [(value)]="resolution" (valueChange)="redraw()" [compareWith]="resolutionCmpWith">
+                              <mat-option [value]="1">1 Year</mat-option>
+                              <mat-option [value]="5">5 Years</mat-option>
+                              <mat-option [value]="10">10 Years</mat-option>
+                              <mat-option [value]="20">20 Years</mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                    
                     </div>
                 </div>
             </div>
