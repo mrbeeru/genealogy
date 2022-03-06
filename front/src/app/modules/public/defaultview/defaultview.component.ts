@@ -236,43 +236,66 @@ export class DefaultviewComponent implements OnInit {
   
   }
 
-  isDraggin = false;
-  originPos = {a: 0, b:0}
-  lastDraw = Date.now()
+  graphDragHelper = {
+    //if user is currently dragging the graph
+    isDraggin: false,
+
+    //initial mouse position when dragging began
+    startPosition: {x: 0, y:0 },
+
+    //used to skip drawing if too often
+    drawDelay: 4,
+
+    //
+    lastDraw: Date.now(),
+
+    canDrag()
+    {
+      if (this.isDraggin == false)
+        return false;
+
+      if (Date.now() - this.lastDraw > this.drawDelay)
+        return true;
+
+      return false;
+    },
+
+    drag(context: Svg, translateX: number, translateY: number)
+    {
+      context?.transform({
+        translateX: translateX,
+        translateY: translateY,
+      })
+
+      this.lastDraw = Date.now();
+    }
+  }
 
   mouseMove(event:any)
   {
-    if(this.isDraggin)
+    if (this.graphDragHelper.canDrag())
     {
-      let now = Date.now();
+      let tx = this.graph.xOffset + event.clientX - this.graphDragHelper.startPosition.x;
+      let ty = this.graph.yOffset + event.clientY - this.graphDragHelper.startPosition.y;
 
-      //try 240 transforms per second
-      if (now - this.lastDraw > 4)
-      {
-        this.context?.transform({
-          translateX: this.graph.xOffset + event.clientX - this.originPos.a,
-          translateY: this.graph.yOffset + event.clientY - this.originPos.b,
-        })
-
-        this.lastDraw = now;
-      }
+      this.graphDragHelper.drag(this.context!, tx, ty)
     }
   }
 
   mouseDown(event:any)
   {
-    this.isDraggin=true;
+    this.graphDragHelper.isDraggin=true;
 
-    this.originPos.a = event.clientX
-    this.originPos.b = event.clientY
+    this.graphDragHelper.startPosition.x = event.clientX
+    this.graphDragHelper.startPosition.y = event.clientY
   }
   
   mouseUp(event:any)
   {
-    this.isDraggin=false;
+    this.graphDragHelper.isDraggin=false;
 
-    this.graph.xOffset = this.graph.xOffset - this.originPos.a + event.clientX
-    this.graph.yOffset = this.graph.yOffset -this.originPos.b + event.clientY
+    this.graph.xOffset = this.graph.xOffset -this.graphDragHelper.startPosition.x + event.clientX
+    this.graph.yOffset = this.graph.yOffset -this.graphDragHelper.startPosition.y + event.clientY
   }
 
   //#endregion

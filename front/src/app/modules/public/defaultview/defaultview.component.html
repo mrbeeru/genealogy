@@ -1,6 +1,6 @@
 
 <div style="overflow: hidden; position: fixed;">
-    <div (mousewheel)="zoom($event)" (mousemove)="mouseMove($event)" (mousedown)="mouseDown($event)" (mouseup)="mouseUp($event)" id="test" style="user-select: none; width: 100vw; height: 100vh" [ngStyle]="{'cursor': isDraggin ? 'move' : 'default'}"></div>
+    <div (mousewheel)="zoom($event)" (mousemove)="mouseMove($event)" (mousedown)="mouseDown($event)" (mouseup)="mouseUp($event)" id="test" style="user-select: none; width: 100vw; height: 100vh" [ngStyle]="{'cursor': graphDragHelper.isDraggin ? 'move' : 'default'}"></div>
 </div>
 
 
