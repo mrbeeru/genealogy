@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
 import { PersonApiService, PersonV2 } from '../../../services/api/person.service';
 
 import { Svg, SVG as svgjs} from '@svgdotjs/svg.js';
@@ -10,58 +10,8 @@ import { Svg, SVG as svgjs} from '@svgdotjs/svg.js';
 })
 export class DefaultviewComponent implements OnInit {
 
-  //@ViewChild('myCanvas') private myCanvas: ElementRef = {} as ElementRef;
-  //context!: CanvasRenderingContext2D;
-
-  constructor(
-    private personService: PersonApiService
-  ) { }
-
-  ngOnInit(): void {
-    this.personService.getAllPersonsAsync().then(x => {
-
-      this.persons = x;
-      this.persons.sort((a,b) => a.birthDate.year < b.birthDate.year ? -1 : 1)
-      this.startYear = this.persons[0].birthDate.year;
-      this.origin = this.persons[0];
-
-      this.draw(x);
-    });
-  }
-
-  draw(x: PersonV2[]) {
-    if (this.origin == null)
-      throw new Error("Origin is null");
-
-    this.buildPersonsObject(this.persons);
-    this.buildGraph(this.origin);
-
-    const width = Math.max(this.graph.width + 5 + 100, window.innerWidth);
-    const height = Math.max(this.graph.height + 3, window.innerHeight);
-    this.context = svgjs().addTo("#test").size(width, height);
-
-    this.drawGraph(this.context, this.graph);
-  }
-
-
-  buildPersonsObject(persons: PersonV2[]) {
-    persons.forEach(p => {
-      this.personMap[p.id] = p
-    });
-  }
-
-
-  initializeGlobals(){
-    this.personToShapeMap = new Map<PersonV2, Shape>();
-    this.personMap = {};
-    this.graph = { width: 0, height: 0, shapes: [], xOffset: this.graph.xOffset, yOffset: this.graph.yOffset };
-    this.globalXOffset = 5;
-    this.globalYOffset = 5;
-
-    this.buildPersonsObject(this.persons);
-  }
-
-  context? : Svg = undefined;
+  context!: Svg;
+  timeAxisContext!: Svg;
 
   personMap: any = {};
   persons: PersonV2[] = [];
@@ -77,6 +27,7 @@ export class DefaultviewComponent implements OnInit {
   globalYOffset = 5;
   startYear = 0;
   resolution : number = 10;
+  presentYear: number = new Date().getUTCFullYear();
 
   graph: Graph = { 
     width: 0, 
@@ -86,6 +37,57 @@ export class DefaultviewComponent implements OnInit {
     yOffset: 0 ,
   };
 
+
+  constructor(
+    private personService: PersonApiService
+  ) { }
+
+  ngOnInit(): void {
+    this.personService.getAllPersonsAsync().then(x => {
+      this.persons = x;
+      this.persons.sort((a,b) => a.birthDate.year < b.birthDate.year ? -1 : 1)
+      this.startYear = this.persons[0].birthDate.year;
+      this.origin = this.persons[0];
+
+
+      this.build(x);
+      const width = Math.max(this.graph.width + 5 + 100, window.innerWidth);
+      const height = Math.max(this.graph.height + 3, window.innerHeight);
+      
+      this.timeAxisContext = svgjs().addTo("#timeaxis").size(width, 30)
+      this.drawTimeAxis()
+      
+      this.context = svgjs().addTo("#test").size(width, height);
+      this.drawGraph(this.context, this.graph);
+
+    });
+  }
+
+
+  build(x: PersonV2[]) {
+    if (this.origin == null)
+      throw new Error("Origin is null");
+
+    this.buildPersonsObject(this.persons);
+    this.buildGraph(this.origin);
+  }
+
+
+  initializeGlobals(){
+    this.personToShapeMap = new Map<PersonV2, Shape>();
+    this.personMap = {};
+    this.graph = { width: 0, height: 0, shapes: [], xOffset: this.graph.xOffset, yOffset: this.graph.yOffset };
+    this.globalXOffset = 5;
+    this.globalYOffset = 5;
+
+    this.buildPersonsObject(this.persons);
+  }
+
+  buildPersonsObject(persons: PersonV2[]) {
+    persons.forEach(p => {
+      this.personMap[p.id] = p
+    });
+  }
 
   buildGraph(person: PersonV2) {
     if (this.graph.shapes == null)
@@ -122,7 +124,7 @@ export class DefaultviewComponent implements OnInit {
 
   buildShapes(person: PersonV2): Shape {
     let born = person.birthDate.year;
-    let died = person.deathDate?.year ?? new Date().getUTCFullYear();
+    let died = person.deathDate?.year ?? this.presentYear;
 
     let xOffset = (born - this.startYear) / this.resolution * this.segmentLength + this.segmentSpacing * (Math.floor((born - (Math.floor(this.startYear / this.resolution) * this.resolution)) / this.resolution)) + 5;
     let textOffset = xOffset + 5;
@@ -172,6 +174,19 @@ export class DefaultviewComponent implements OnInit {
     return output;
   }
 
+  drawTimeAxis() {
+    let year = this.startYear - this.startYear % this.resolution;
+    let endYear = this.presentYear;
+    let numIterations = (endYear - this.startYear) / this.resolution
+    let accountForPartialFirstSegment = (this.startYear - year) / this.resolution * this.segmentLength;
+
+    for (let i = 0, segmentSpacing = 0; i < numIterations; i++, segmentSpacing += 2)
+    {
+      this.timeAxisContext.text(`${year}`).move(this.segmentLength * i - 10 - accountForPartialFirstSegment + segmentSpacing, 10).font({ fill: "black", size: 12, weight: '500'});
+      year += this.resolution;
+    }
+  }
+
   drawGraph(context: Svg, graph: any) {
     graph.shapes.forEach((shape: Shape) => {
       shape.lifeSegments.forEach((segment: LifeSegment) => {
@@ -211,7 +226,8 @@ export class DefaultviewComponent implements OnInit {
   }
 
   redraw(){
-    this.context?.clear();
+    this.context.clear();
+    this.timeAxisContext.clear();
 
     this.initializeGlobals();
     this.buildGraph(this.origin!);
@@ -219,16 +235,16 @@ export class DefaultviewComponent implements OnInit {
     const width = Math.max(this.graph.width + 5 + 100, window.innerWidth);
     const height = Math.max(this.graph.height + 3, window.innerHeight);
 
-    
-
     this.context?.size(width, height);
+    this.timeAxisContext.size(width, 30);
+
     this.drawGraph(this.context!, this.graph);
+    this.drawTimeAxis();
   }
 
   resolutionCmpWith(x:any, y:any){
     return x == y;
   }
-
 
   zoom(event: any){
     //console.log(event)
@@ -279,6 +295,7 @@ export class DefaultviewComponent implements OnInit {
       let ty = this.graph.yOffset + event.clientY - this.graphDragHelper.startPosition.y;
 
       this.graphDragHelper.drag(this.context!, tx, ty)
+      this.timeAxisContext.transform({translateX: tx})
     }
   }
 

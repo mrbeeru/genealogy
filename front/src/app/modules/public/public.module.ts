@@ -17,7 +17,7 @@ import {DragDropModule} from '@angular/cdk/drag-drop';
 @NgModule({
   declarations: [
     MembersComponent,
-    DefaultviewComponent
+    DefaultviewComponent,
   ],
   imports: [
     CommonModule,

@@ -1,11 +1,23 @@
 
-<div style="overflow: hidden; position: fixed;">
-    <div (mousewheel)="zoom($event)" (mousemove)="mouseMove($event)" (mousedown)="mouseDown($event)" (mouseup)="mouseUp($event)" id="test" style="user-select: none; width: 100vw; height: 100vh" [ngStyle]="{'cursor': graphDragHelper.isDraggin ? 'move' : 'default'}"></div>
+
+
+<div style="z-index:9; overflow: hidden; position: fixed; background-color: white; border-bottom: 1px solid #e0e0e0;">
+    <div id="timeaxis" style="user-select: none;"></div>
 </div>
 
+<div style="overflow: hidden; position: fixed;">
+    <div 
+        id="test" 
+        style="user-select: none; min-width: 100vw; min-height: 100vh" 
+        [ngStyle]="{'cursor': graphDragHelper.isDraggin ? 'move' : 'default'}"
+        (mousewheel)="zoom($event)" 
+        (mousemove)="mouseMove($event)" 
+        (mousedown)="mouseDown($event)" 
+        (mouseup)="mouseUp($event)">
+    </div>
+</div>
 
-
-<div class="d-flex" style="position: fixed; right: 0; top: 0">
+<div class="d-flex" style="position: fixed; right: 0; top: 0; z-index: 99">
     <div> 
         <button mat-raised-button (click)="drawer.toggle()"> 
             <mat-icon *ngIf="drawer.opened">menu_close</mat-icon> 
@@ -21,9 +33,7 @@
                         <mat-slider class="w-100" [(ngModel)]="segmentTextSize" (change)="redraw()"  thumbLabel tickInterval="1" step="1" min="10" max="32" aria-label="units"> </mat-slider>
                         <mat-label style="white-space: nowrap;">Pixels per segment: {{segmentLength}}</mat-label>
                         <mat-slider class="w-100" [(ngModel)]="segmentLength" (change)="redraw()"  thumbLabel tickInterval="5" step="5" min="5" max="200" aria-label="units"> </mat-slider>
-                        <!-- <mat-label style="white-space: nowrap;">Years per segment: {{resolution}}</mat-label>
-                        <mat-slider class="w-100" [(ngModel)]="resolution" (change)="redraw()"  thumbLabel  step="5" min="5" max="100" aria-label="units"> </mat-slider>
-                     -->
+
                         <mat-form-field appearance="fill">
                             <mat-label>Select an option</mat-label>
                             <mat-select [(value)]="resolution" (valueChange)="redraw()" [compareWith]="resolutionCmpWith">
