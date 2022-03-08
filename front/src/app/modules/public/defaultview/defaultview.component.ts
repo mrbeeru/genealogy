@@ -12,22 +12,26 @@ export class DefaultviewComponent implements OnInit {
 
   context!: Svg;
   timeAxisContext!: Svg;
+  gridContext!: Svg;
 
   personMap: any = {};
   persons: PersonV2[] = [];
   personToShapeMap = new Map<PersonV2, Shape>();
   origin?: PersonV2;
 
-  segmentLength = 50;
+  gridLineWidth = 2;
+  timeAxisHeight = 30;
+  segmentLength = 100;
   segmentHeight = 16;
   segmentSpacing = 2;
   segmentTextSize : number = 11;
   descendantSpacing = 30;
   globalXOffset = 5;
-  globalYOffset = 5;
+  globalYOffset = this.timeAxisHeight + 5;
   startYear = 0;
   resolution : number = 10;
   presentYear: number = new Date().getUTCFullYear();
+
 
   graph: Graph = { 
     width: 0, 
@@ -36,6 +40,23 @@ export class DefaultviewComponent implements OnInit {
     xOffset: 0,
     yOffset: 0 ,
   };
+
+  colorset = {
+    
+    timeAxisBackground: "#131722",
+    timeAxisForeground: "white",
+    
+    graphBackground: "#171b26",
+    graphNames: "#FFFD",
+    graphRelations: "#777",
+
+    segmentColorMale: "#07698a88",
+    segmentColorFemale: "#ff666e88",
+    //segmentColorFemale: "#ff3ba777",
+    //segmentColorFemale: "#ff4fb077",
+
+    gridLines: "#FFFFFF06",
+  }
 
 
   constructor(
@@ -54,12 +75,14 @@ export class DefaultviewComponent implements OnInit {
       const width = Math.max(this.graph.width + 5 + 100, window.innerWidth);
       const height = Math.max(this.graph.height + 3, window.innerHeight);
       
-      this.timeAxisContext = svgjs().addTo("#timeaxis").size(width, 30)
+      this.timeAxisContext = svgjs().addTo("#timeaxis").size(2*width, this.timeAxisHeight)
       this.drawTimeAxis()
       
       this.context = svgjs().addTo("#test").size(width, height);
       this.drawGraph(this.context, this.graph);
 
+      this.gridContext = svgjs().addTo("#grid").size(10000, 10000)
+      this.drawGrid(this.gridContext)
     });
   }
 
@@ -72,11 +95,12 @@ export class DefaultviewComponent implements OnInit {
     this.buildGraph(this.origin);
   }
 
-
   initializeGlobals(){
     this.personToShapeMap = new Map<PersonV2, Shape>();
     this.personMap = {};
     this.graph = { width: 0, height: 0, shapes: [], xOffset: this.graph.xOffset, yOffset: this.graph.yOffset };
+
+    console.log(this.graphDragHelper.startPosition.x)
     this.globalXOffset = 5;
     this.globalYOffset = 5;
 
@@ -121,7 +145,6 @@ export class DefaultviewComponent implements OnInit {
       });
   }
 
-
   buildShapes(person: PersonV2): Shape {
     let born = person.birthDate.year;
     let died = person.deathDate?.year ?? this.presentYear;
@@ -132,7 +155,7 @@ export class DefaultviewComponent implements OnInit {
     let segments: LifeSegment[] = [];
     let text = {
       text: "",
-      color: "black",
+      color: this.colorset.graphNames,
       size: this.segmentTextSize,
       x: textOffset,
       y: this.globalYOffset - 1
@@ -175,27 +198,35 @@ export class DefaultviewComponent implements OnInit {
   }
 
   drawTimeAxis() {
+    let segmentFullLength = this.segmentLength + this.segmentSpacing;
     let year = this.startYear - this.startYear % this.resolution;
     let endYear = this.presentYear;
     let numIterations = (endYear - this.startYear) / this.resolution
     let accountForPartialFirstSegment = (this.startYear - year) / this.resolution * this.segmentLength;
 
-    for (let i = 0, segmentSpacing = 0; i < numIterations; i++, segmentSpacing += 2)
+    //start 3 segments before and end 3 after
+    year -= 2 * this.resolution;
+
+    for (let i = 0; i < numIterations + 4; i++)
     {
-      this.timeAxisContext.text(`${year}`).move(this.segmentLength * i - 10 - accountForPartialFirstSegment + segmentSpacing, 10).font({ fill: "black", size: 12, weight: '500'});
-      year += this.resolution;
+      if (i > 0)
+        this.timeAxisContext.text(`${year}`).move(segmentFullLength * i - 10 - accountForPartialFirstSegment , 10).font({ fill: this.colorset.timeAxisForeground, size: 12, weight: '500'});
+      
+        year += this.resolution;
     }
+
+    this.timeAxisContext.transform({translateX: -2 * segmentFullLength + this.graph.xOffset})
   }
 
   drawGraph(context: Svg, graph: any) {
     graph.shapes.forEach((shape: Shape) => {
       shape.lifeSegments.forEach((segment: LifeSegment) => {
-        const fillColor = shape.person.gender == "f" ? "#ffd0e6" : "#aedae7";
+        const fillColor = shape.person.gender == "f" ? this.colorset.segmentColorFemale : this.colorset.segmentColorMale;
         context.rect(segment.width, segment.height).move(segment.x, segment.y).fill(fillColor);
       });
 
-      this.drawRelations(context, shape, "gray")
-      this.drawNameText(context, `${shape.person.firstName} ${shape.person.lastName}`, "black", shape.textObject.size, shape.textObject.x, shape.textObject.y)
+      this.drawRelations(context, shape, this.colorset.graphRelations)
+      this.drawNameText(context, `${shape.person.firstName} ${shape.person.lastName}`, this.colorset.graphNames, shape.textObject.size, shape.textObject.x, shape.textObject.y)
     });
   }
 
@@ -214,7 +245,7 @@ export class DefaultviewComponent implements OnInit {
     let yFather = y - heightFather + this.segmentHeight / 2
 
     //draw relation line
-    context.line(x,y - Math.max(heightMother, heightFather) + this.segmentHeight / 2, x, y).stroke({ color: color, width: 2, linecap: 'round' })
+    context.line(x,y - Math.max(heightMother, heightFather) + this.segmentHeight / 2, x, y).stroke({ color: color, width: 1, linecap: 'round' })
     
     //draw bumps
     context.circle(6).move(x - 3, yMother - 3).fill(color)
@@ -222,12 +253,30 @@ export class DefaultviewComponent implements OnInit {
   }
 
   drawNameText(context: Svg, text: string, color: string, size: number, x: number, y: number) {
-    var txt = context.text(text).move(x,y).font({ fill: color, size: size, weight: '500'});
+    context.text(text).move(x,y).font({ fill: color, size: size, weight: '500'});
+  }
+
+  drawGrid(context: Svg)
+  {
+    let endYear = this.presentYear;
+    let numIterations = (endYear - this.startYear) / this.resolution
+
+    let segmentFullLength = this.segmentLength + this.segmentSpacing
+    let accountForPartialFirstSegment = ((this.startYear % this.resolution) / this.resolution) * (this.segmentLength + this.segmentSpacing);
+    
+    for (let i = 0; i < numIterations + 4; i++)
+    {
+      const xPos = i * segmentFullLength + 5 - accountForPartialFirstSegment - 1;
+      context.line(xPos, 0, xPos, 10000).stroke({ color: this.colorset.gridLines, width: this.gridLineWidth })
+    }
+
+    context.transform({translateX: -2 * segmentFullLength + this.graph.xOffset})
   }
 
   redraw(){
     this.context.clear();
     this.timeAxisContext.clear();
+    this.gridContext.clear();
 
     this.initializeGlobals();
     this.buildGraph(this.origin!);
@@ -236,10 +285,12 @@ export class DefaultviewComponent implements OnInit {
     const height = Math.max(this.graph.height + 3, window.innerHeight);
 
     this.context?.size(width, height);
-    this.timeAxisContext.size(width, 30);
+    this.timeAxisContext.size(width, this.timeAxisHeight);
+    this.gridContext.size(10000, 10000)
 
     this.drawGraph(this.context!, this.graph);
     this.drawTimeAxis();
+    this.drawGrid(this.gridContext)
   }
 
   resolutionCmpWith(x:any, y:any){
@@ -295,7 +346,11 @@ export class DefaultviewComponent implements OnInit {
       let ty = this.graph.yOffset + event.clientY - this.graphDragHelper.startPosition.y;
 
       this.graphDragHelper.drag(this.context!, tx, ty)
-      this.timeAxisContext.transform({translateX: tx})
+
+      // account for the 3 extra segments
+      let translateX = 2 * (this.segmentLength + this.segmentSpacing)
+      this.timeAxisContext.transform({translateX: -translateX  + tx })
+      this.gridContext.transform({translateX: -translateX + tx})
     }
   }
 
@@ -304,7 +359,7 @@ export class DefaultviewComponent implements OnInit {
     this.graphDragHelper.isDraggin=true;
 
     this.graphDragHelper.startPosition.x = event.clientX
-    this.graphDragHelper.startPosition.y = event.clientY
+    this.graphDragHelper.startPosition.y = event.clientY 
   }
   
   mouseUp(event:any)

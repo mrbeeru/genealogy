@@ -1,21 +1,30 @@
 
 
 
-<div style="z-index:9; overflow: hidden; position: fixed; background-color: white; border-bottom: 1px solid #e0e0e0;">
-    <div id="timeaxis" style="user-select: none;"></div>
+<div style="z-index:9; overflow: hidden; position: fixed; border-bottom: 2px solid #FFFFFF06;" [style.background-color]="colorset.timeAxisBackground">
+    <div id="timeaxis" style="user-select: none; min-width: 100vw;"></div>
 </div>
 
-<div style="overflow: hidden; position: fixed;">
+
+<div style="overflow: hidden; position: fixed;" [style.background-color]="colorset.graphBackground">
+    <div id="grid" style="min-width: 100vw; min-height: 100vw;"></div>
+</div>
+
+
+<div style="overflow: hidden; position: fixed; ">
     <div 
         id="test" 
-        style="user-select: none; min-width: 100vw; min-height: 100vh" 
+        style="user-select: none; min-width: 100vw; min-height: 100vh;" 
         [ngStyle]="{'cursor': graphDragHelper.isDraggin ? 'move' : 'default'}"
         (mousewheel)="zoom($event)" 
         (mousemove)="mouseMove($event)" 
         (mousedown)="mouseDown($event)" 
-        (mouseup)="mouseUp($event)">
+        (mouseup)="mouseUp($event)"
+        
+        >
     </div>
 </div>
+
 
 <div class="d-flex" style="position: fixed; right: 0; top: 0; z-index: 99">
     <div> 
@@ -24,8 +33,8 @@
             <mat-icon *ngIf="!drawer.opened">menu_open</mat-icon> 
         </button>
     </div>  
-    <mat-drawer-container style="height: 100vh; background-color: white;">
-        <mat-drawer #drawer position="end" mode="side" opened="true">
+    <mat-drawer-container style="height: 100vh;" >
+        <mat-drawer #drawer position="end" mode="side" opened="false">
             <div class="container-fluid">
                 <div class="row">
                     <div class="col">
@@ -34,7 +43,7 @@
                         <mat-label style="white-space: nowrap;">Pixels per segment: {{segmentLength}}</mat-label>
                         <mat-slider class="w-100" [(ngModel)]="segmentLength" (change)="redraw()"  thumbLabel tickInterval="5" step="5" min="5" max="200" aria-label="units"> </mat-slider>
 
-                        <mat-form-field appearance="fill">
+                        <mat-form-field appearance="standard">
                             <mat-label>Select an option</mat-label>
                             <mat-select [(value)]="resolution" (valueChange)="redraw()" [compareWith]="resolutionCmpWith">
                               <mat-option [value]="1">1 Year</mat-option>
@@ -43,7 +52,6 @@
                               <mat-option [value]="20">20 Years</mat-option>
                             </mat-select>
                           </mat-form-field>
-                    
                     </div>
                 </div>
             </div>
