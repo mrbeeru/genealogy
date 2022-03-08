@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
-import { PersonApiService, PersonV2 } from '../../../services/api/person.service';
+import { PersonApiService, PersonV2 } from '../../core/services/person.service';
 
 import { Svg, SVG as svgjs} from '@svgdotjs/svg.js';
 
@@ -37,25 +37,40 @@ export class DefaultviewComponent implements OnInit {
     width: 0, 
     height: 0, 
     shapes: [],
-    xOffset: 0,
+    xOffset: 50,
     yOffset: 0 ,
   };
 
+  // colorset = {
+    
+  //   timeAxisBackground: "#131722",
+  //   timeAxisForeground: "white",
+    
+  //   graphBackground: "#171b26",
+  //   graphNames: "#FFFD",
+  //   graphRelations: "#777",
+
+  //   segmentColorMale: "#07698a88",
+  //   segmentColorFemale: "#ff666e88",
+  //   //segmentColorFemale: "#ff3ba777",
+  //   //segmentColorFemale: "#ff4fb077",
+
+  //   gridLines: "#FFFFFF06",
+  // }
+
   colorset = {
     
-    timeAxisBackground: "#131722",
-    timeAxisForeground: "white",
+    timeAxisBackground: "#f9f9f9",
+    timeAxisForeground: "black",
     
-    graphBackground: "#171b26",
-    graphNames: "#FFFD",
+    graphBackground: "white",
+    graphNames: "#000D",
     graphRelations: "#777",
 
     segmentColorMale: "#07698a88",
     segmentColorFemale: "#ff666e88",
-    //segmentColorFemale: "#ff3ba777",
-    //segmentColorFemale: "#ff4fb077",
 
-    gridLines: "#FFFFFF06",
+    gridLines: "#00000008",
   }
 
 
@@ -72,14 +87,26 @@ export class DefaultviewComponent implements OnInit {
 
 
       this.build(x);
+      
+      // try to calculate graph xOffset to center the graph its width < viewport width
+      // 256 space taken by menu
+      if (this.globalXOffset < window.innerWidth - 256 - this.graph.xOffset)
+      {
+        let val = window.innerWidth - 256 - this.globalXOffset - this.graph.xOffset
+        this.graph.xOffset = val / 2
+      }
+
       const width = Math.max(this.graph.width + 5 + 100, window.innerWidth);
       const height = Math.max(this.graph.height + 3, window.innerHeight);
-      
+
       this.timeAxisContext = svgjs().addTo("#timeaxis").size(2*width, this.timeAxisHeight)
       this.drawTimeAxis()
       
       this.context = svgjs().addTo("#test").size(width, height);
       this.drawGraph(this.context, this.graph);
+
+      //'center' the graph
+      this.context.translate(this.graph.xOffset,0)
 
       this.gridContext = svgjs().addTo("#grid").size(10000, 10000)
       this.drawGrid(this.gridContext)
@@ -100,9 +127,8 @@ export class DefaultviewComponent implements OnInit {
     this.personMap = {};
     this.graph = { width: 0, height: 0, shapes: [], xOffset: this.graph.xOffset, yOffset: this.graph.yOffset };
 
-    console.log(this.graphDragHelper.startPosition.x)
     this.globalXOffset = 5;
-    this.globalYOffset = 5;
+    this.globalYOffset = this.timeAxisHeight + 5;
 
     this.buildPersonsObject(this.persons);
   }

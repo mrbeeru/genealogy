@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { PersonApiService, PersonV2 } from 'src/app/services/api/person.service';
+import { PersonApiService, PersonV2 } from 'src/app/modules/core/services/person.service';
 
 @Component({
   selector: 'app-person-manager',

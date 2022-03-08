@@ -1,0 +1,27 @@
+<div style="display: flex; flex-direction: column; height: 100%;">
+    <div style="height: 64px; border-bottom: 1px solid #DDD; " class="d-flex align-items-center">
+        <button mat-button (click)="drawer.toggle()">
+            <span class="material-icons-outlined">menu</span>
+        </button>
+    </div>
+
+    <mat-drawer-container autosize style="flex: 1; background-color: white;">
+        <mat-drawer #drawer mode="side" opened="true" style="width: 256px;">
+            <div class="d-flex flex-column align-items-start" style="color: #5f6368;">
+                <button mat-button routerLink="projects" class="mt-4 w-100 d-flex align-items-start p-1">
+                    <span class="material-icons-outlined mr-3 ml-3">book</span>
+                    Projects
+                </button>
+
+                <button mat-button routerLink="members" class="w-100 d-flex align-items-start p-1">
+                    <span class="material-icons-outlined  mr-3 ml-3">people</span>
+                    Members
+                </button>
+            </div>
+        </mat-drawer>
+
+        <div>
+            <router-outlet></router-outlet>
+        </div>
+    </mat-drawer-container>
+</div>

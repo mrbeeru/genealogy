@@ -31,6 +31,7 @@ import {DragDropModule} from '@angular/cdk/drag-drop';
     MatSliderModule,
     FormsModule,
     DragDropModule
-  ]
+  ],
+  exports:[DefaultviewComponent]
 })
 export class PublicModule { }
