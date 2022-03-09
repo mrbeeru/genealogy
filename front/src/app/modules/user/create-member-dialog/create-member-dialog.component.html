@@ -1,0 +1,81 @@
+<h1 mat-dialog-title>Create a member</h1>
+<div mat-dialog-content>
+    <form [formGroup]="newMemberForm">
+        <div class="d-flex" style="overflow: hidden;">
+
+            <div class="d-flex flex-column">
+                <mat-form-field>
+                    <mat-label>First Name</mat-label>
+                    <input matInput formControlName="firstName">
+                </mat-form-field>
+    
+                <mat-form-field>
+                    <mat-label>Last Name</mat-label>
+                    <input matInput formControlName="lastName">
+                </mat-form-field>
+    
+                <mat-form-field appearance="standard">
+                    <mat-label>Gender</mat-label>
+                    <mat-select formControlName="gender">
+                        <mat-option value="m"> Male </mat-option>
+                        <mat-option value="f"> Female </mat-option>
+                    </mat-select>
+                </mat-form-field>
+    
+                <div class="mt-4">
+                    <mat-label>Birth date</mat-label>
+                    <div>
+                        <mat-form-field formGroupName="birthDate" style="max-width: 60px;">
+                            <mat-label>Year</mat-label>
+                            <input matInput formControlName="year" type="number" autocomplete="off">
+                        </mat-form-field>
+                        <mat-form-field formGroupName="birthDate" class="mr-3 ml-3" style="max-width: 60px;">
+                            <mat-label>Month</mat-label>
+                            <input matInput formControlName="month" type="number" autocomplete="off">
+                        </mat-form-field>
+                        <mat-form-field formGroupName="birthDate" style="max-width: 60px;">
+                            <mat-label>Day</mat-label>
+                            <input matInput formControlName="day" type="number" autocomplete="off">
+                        </mat-form-field>
+                    </div>
+                
+                </div>
+    
+                <div>
+                    <mat-label>Death date</mat-label>
+                    <div>
+                        <mat-form-field formGroupName="deathDate" style="max-width: 60px;">
+                            <mat-label>Year</mat-label>
+                            <input matInput formControlName="year" type="number" autocomplete="off">
+                        </mat-form-field>
+                        <mat-form-field formGroupName="birthDate" class="mr-3 ml-3" style="max-width: 60px;">
+                            <mat-label>Month</mat-label>
+                            <input matInput formControlName="month" type="number" autocomplete="off">
+                        </mat-form-field>
+                        <mat-form-field formGroupName="birthDate" style="max-width: 60px;">
+                            <mat-label>Day</mat-label>
+                            <input matInput formControlName="day" type="number" autocomplete="off">
+                        </mat-form-field>
+                    </div>
+                
+                </div>
+            </div>
+
+            <div class="ml-4 d-flex flex-column">
+                <mat-form-field>
+                    <mat-label>Father Id</mat-label>
+                    <input matInput formControlName="fatherId">
+                </mat-form-field>
+
+                <mat-form-field>
+                    <mat-label>Mother Id</mat-label>
+                    <input matInput formControlName="motherId">
+                </mat-form-field>
+            </div>
+        </div>
+    </form>
+</div>
+<div mat-dialog-actions>
+    <button mat-button (click)="onCancelClick()">Cancel</button>
+    <button mat-button (click)="onOkClick()" [disabled]="!newMemberForm.valid">Ok</button>
+</div>

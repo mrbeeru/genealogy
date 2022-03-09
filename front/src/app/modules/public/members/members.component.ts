@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { PersonApiService, PersonV2 } from 'src/app/modules/core/services/person.service';
+import { PersonV2 } from '../../core/models/person.model';
+import { PersonService } from '../../core/services/person.service';
 
 @Component({
   selector: 'app-members',
@@ -14,7 +15,7 @@ export class MembersComponent implements OnInit {
   persons: PersonV2[] = [];
   filteredPersons: PersonV2[] = [];
 
-  constructor(private personService: PersonApiService) {
+  constructor(private personService: PersonService) {
     this.selectedSortOption = this.sortOptions[0];
   }
 

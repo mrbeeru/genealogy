@@ -13,7 +13,7 @@
     </div>
     <div class="row" >  
         <div class="col-md-6 col-xl-3" *ngFor="let project of projects">
-            <div class="mat-elevation-z2 m-2 p-3" style="background-color: white; border-radius: 8px;" [routerLink]="'/project/' + project.name">
+            <div class="mat-elevation-z2 m-2 p-3" style="background-color: white; border-radius: 8px;" [routerLink]="'/project/' + project.id">
                 <div style="color: #3c4043;font-size: .875rem; font-weight: 500;">
                     {{project.name}}
                 </div>

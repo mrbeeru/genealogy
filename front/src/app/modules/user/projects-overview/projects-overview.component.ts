@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ProjectModel } from '../../core/models/project.model';
+import { ProjectService } from '../../core/services/project.service';
 import { CreateProjectDialogComponent } from '../create-project-dialog/create-project-dialog.component';
 
 @Component({
@@ -10,23 +11,25 @@ import { CreateProjectDialogComponent } from '../create-project-dialog/create-pr
 })
 export class ProjectsOverviewComponent implements OnInit {
 
-  projects: ProjectModel[] = []
+  projects: ProjectModel[];
 
-  constructor(public dialog: MatDialog) { }
+  constructor(
+    private dialog: MatDialog,
+    private projectService: ProjectService) 
+  {
+    this.projects = this.projectService.getProjects();
+  }
 
   ngOnInit(): void {
-    this.projects.push(
-      {name: "jesus christ", memberCount: 1, visibility: "shared"},
-      {name: "queen eli", memberCount: 221, visibility: "shared"},
-      {name: "bubbles", memberCount: 52, visibility:"private"},
-    )
+   
   }
 
   createProject(){
     const dialogRef = this.dialog.open(CreateProjectDialogComponent);
 
     dialogRef.afterClosed().subscribe((newProject: ProjectModel) => {
-      this.projects.push(newProject)
+      if (newProject != null)
+        this.projects.push(newProject)
     });
   }
 

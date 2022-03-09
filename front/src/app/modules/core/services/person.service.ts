@@ -2,9 +2,10 @@ import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { lastValueFrom } from "rxjs";
 import { environment } from "../../../../environments/environment";
+import { PersonV2 } from "../models/person.model";
 
 @Injectable({ providedIn: 'root' })
-export class PersonApiService {
+export class PersonService {
     constructor(
         private http: HttpClient,
     ) {
@@ -18,25 +19,3 @@ export class PersonApiService {
 }
 
 
-export interface PersonV2 
-{
-    id: string,
-    firstName: string,
-    lastName: string,
-    gender: string,
-    birthDate: {
-        year: number,
-        month?: number,
-        day?: number,
-    },
-    deathDate?: {
-        year: number,
-        month?: number,
-        day?:number,
-    }
-    
-    motherId?: string,
-    fatherId?: string,
-    spouseIds?: string[],
-    childrenIds?: string[]
-}

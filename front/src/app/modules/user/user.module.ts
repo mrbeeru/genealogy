@@ -16,13 +16,19 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { DefaultviewComponent } from '../public/defaultview/defaultview.component';
 import { PublicModule } from '../public/public.module';
+import { CreateMemberDialogComponent } from './create-member-dialog/create-member-dialog.component';
+import { ReactiveFormsModule } from '@angular/forms';
+import {MatRadioModule} from '@angular/material/radio';
+import { MatSelectModule } from '@angular/material/select';
+
 
 @NgModule({
   declarations: [
     ProjectComponent,
     UserLayoutComponent,
     ProjectsOverviewComponent,
-    CreateProjectDialogComponent
+    CreateProjectDialogComponent,
+    CreateMemberDialogComponent
   ],
   imports: [
     CommonModule,
@@ -35,7 +41,10 @@ import { PublicModule } from '../public/public.module';
     MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
-    PublicModule
+    PublicModule,
+    ReactiveFormsModule,
+    MatRadioModule,
+    MatSelectModule,
   ]
 })
 export class UserModule { }

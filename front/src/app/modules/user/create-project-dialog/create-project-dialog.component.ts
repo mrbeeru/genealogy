@@ -20,6 +20,7 @@ export class CreateProjectDialogComponent implements OnInit {
 
   onOkClick(projectName: string){
     let project: ProjectModel = {
+      id: (Date.now().toString()),
       name: projectName,
       memberCount: 0,
       visibility: "private"

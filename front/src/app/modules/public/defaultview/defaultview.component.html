@@ -2,18 +2,18 @@
 
 
 <div style="z-index:9; overflow: hidden; position: fixed; border-bottom: 2px solid #FFFFFF06;" [style.background-color]="colorset.timeAxisBackground">
-    <div id="timeaxis" style="user-select: none; min-width: 100vw;"></div>
+    <div #timeaxis style="user-select: none; min-width: 100vw;"></div>
 </div>
 
 
 <div style="overflow: hidden; position: fixed;" [style.background-color]="colorset.graphBackground">
-    <div id="grid" style="min-width: 100vw; min-height: 100vw;"></div>
+    <div #grid style="min-width: 100vw; min-height: 100vw;"></div>
 </div>
 
 
 <div style="overflow: hidden; position: fixed; ">
     <div 
-        id="test" 
+        #test
         style="user-select: none; min-width: 100vw; min-height: 100vh;" 
         [ngStyle]="{'cursor': graphDragHelper.isDraggin ? 'move' : 'default'}"
         (mousewheel)="zoom($event)" 
