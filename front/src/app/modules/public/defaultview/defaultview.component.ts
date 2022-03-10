@@ -1,5 +1,5 @@
 import { AfterContentInit, AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { Svg, SVG as svgjs } from '@svgdotjs/svg.js';
+import { Rect, Svg, SVG as svgjs } from '@svgdotjs/svg.js';
 import { Observable } from 'rxjs/internal/Observable';
 import { PersonV2 } from '../../core/models/person.model';
 import { PersonService } from '../../core/services/person.service';
@@ -43,7 +43,6 @@ export class DefaultviewComponent implements AfterViewInit {
     gridLines: "#00000008",
   }
 
-
   context!: Svg;
   timeAxisContext!: Svg;
   gridContext!: Svg;
@@ -51,10 +50,11 @@ export class DefaultviewComponent implements AfterViewInit {
   personMap: any = {};
   personToShapeMap = new Map<PersonV2, Shape>();
   origin?: PersonV2;
+  selectedPerson!: PersonV2 | null
 
   gridLineWidth = 2;
   timeAxisHeight = 30;
-  segmentLength = 100;
+  segmentLength = 50;
   segmentHeight = 16;
   segmentSpacing = 2;
   segmentTextSize: number = 11;
@@ -73,14 +73,18 @@ export class DefaultviewComponent implements AfterViewInit {
     yOffset: 0,
   };
 
-  @Input() persons: PersonV2[] = [];
-
+  
   @ViewChild('test') grapElement!: ElementRef<HTMLElement>;
   @ViewChild('timeaxis') timeAxisElement!: ElementRef<HTMLElement>;
   @ViewChild('grid') gridElement!: ElementRef<HTMLElement>;
-
+  
+  //consumer can specify what width is already occupied
+  //so this component can try to center the graph
+  @Input() spaceOxTaken: number = 0;
+  @Input() persons: PersonV2[] = [];
   //leave this here for now
   @Input() events!: Observable<PersonV2 | undefined>;
+  @Output() selectedPersonChanged: EventEmitter<PersonV2> = new EventEmitter<PersonV2>();
 
   constructor() { }
 
@@ -92,10 +96,9 @@ export class DefaultviewComponent implements AfterViewInit {
 
     this.build(this.persons);
 
-    // try to calculate graph xOffset to center the graph its width < viewport width
-    // 256 space taken by menu
-    if (this.globalXOffset < window.innerWidth - 256 - this.graph.xOffset) {
-      let val = window.innerWidth - 256 - this.globalXOffset - this.graph.xOffset
+    // if spaceOxTaken is set, try to center
+    if (this.spaceOxTaken > 0 && this.globalXOffset < window.innerWidth - this.spaceOxTaken - this.graph.xOffset) {
+      let val = window.innerWidth - this.spaceOxTaken - this.globalXOffset - this.graph.xOffset
       this.graph.xOffset = val / 2
     }
 
@@ -182,7 +185,7 @@ export class DefaultviewComponent implements AfterViewInit {
     let xOffset = (born - this.startYear) / this.resolution * this.segmentLength + this.segmentSpacing * (Math.floor((born - (Math.floor(this.startYear / this.resolution) * this.resolution)) / this.resolution)) + 5;
     let textOffset = xOffset + 5;
 
-    let segments: LifeSegment[] = [];
+    //let segments: LifeSegment[] = [];
     let text = {
       text: "",
       color: this.colorset.graphNames,
@@ -191,20 +194,38 @@ export class DefaultviewComponent implements AfterViewInit {
       y: this.globalYOffset - 1
     }
 
+    let output: Shape = {
+      textObject: text,
+      lifeSegments: [],
+      person: person,
+    }
+
     //draw first segment
     let firstSegment = Math.min((this.resolution - born % this.resolution), died - born) / this.resolution * this.segmentLength;
-    segments.push({ x: xOffset, y: this.globalYOffset, width: firstSegment, height: this.segmentHeight })
+    output.lifeSegments.push({ 
+      x: xOffset, 
+      y: this.globalYOffset, 
+      width: firstSegment, 
+      height: this.segmentHeight, 
+      parentShape: output 
+    })
     xOffset += this.segmentSpacing + firstSegment;
 
     //draw full segments
     for (let year = born + this.resolution - (born % this.resolution); year < died - this.resolution; year += this.resolution) {
-      segments.push({ x: xOffset, y: this.globalYOffset, width: this.segmentLength, height: this.segmentHeight })
+      output.lifeSegments.push({ x: xOffset, y: this.globalYOffset, width: this.segmentLength, height: this.segmentHeight, parentShape: output })
       xOffset += this.segmentSpacing + this.segmentLength;
     }
 
     //draw last segment
     if (died - born + born % this.resolution > this.resolution) {
-      segments.push({ x: xOffset, y: this.globalYOffset, width: (died % this.resolution) / this.resolution * this.segmentLength, height: this.segmentHeight })
+      output.lifeSegments.push({
+        x: xOffset, 
+        y: this.globalYOffset, 
+        width: (died % this.resolution) / this.resolution * this.segmentLength, 
+        height: this.segmentHeight,
+        parentShape: output 
+      })
       xOffset += (died % this.resolution) / this.resolution * this.segmentLength
     }
 
@@ -217,12 +238,6 @@ export class DefaultviewComponent implements AfterViewInit {
 
     if (this.graph.width < this.globalXOffset)
       this.graph.width = this.globalXOffset;
-
-    let output: Shape = {
-      textObject: text,
-      lifeSegments: segments,
-      person: person,
-    }
 
     return output;
   }
@@ -251,7 +266,10 @@ export class DefaultviewComponent implements AfterViewInit {
     graph.shapes.forEach((shape: Shape) => {
       shape.lifeSegments.forEach((segment: LifeSegment) => {
         const fillColor = shape.person.gender == "f" ? this.colorset.segmentColorFemale : this.colorset.segmentColorMale;
-        context.rect(segment.width, segment.height).move(segment.x, segment.y).fill(fillColor);
+        let rect = context.rect(segment.width, segment.height).move(segment.x, segment.y).fill(fillColor);
+
+        //select the clicked person
+        rect.on('click', () => {this.selectedPerson = shape.person, this.selectedPersonChanged.emit(this.selectedPerson)})
       });
 
       this.drawRelations(context, shape, this.colorset.graphRelations)
@@ -363,7 +381,7 @@ export class DefaultviewComponent implements AfterViewInit {
     }
   }
 
-  mouseMove(event: any) {
+  dragGraph(event: any) {
     if (this.graphDragHelper.canDrag()) {
       let tx = this.graph.xOffset + event.clientX - this.graphDragHelper.startPosition.x;
       let ty = this.graph.yOffset + event.clientY - this.graphDragHelper.startPosition.y;
@@ -390,7 +408,30 @@ export class DefaultviewComponent implements AfterViewInit {
     this.graph.xOffset = this.graph.xOffset - this.graphDragHelper.startPosition.x + event.clientX
     this.graph.yOffset = this.graph.yOffset - this.graphDragHelper.startPosition.y + event.clientY
   }
+  
+  axisX = 0;  
+  canExpandAxis = false;
 
+  expandTimeAxis(event: any)
+  {
+    if (this.canExpandAxis && (this.segmentLength > 5 || event.clientX > this.axisX))
+    {
+      this.segmentLength += ((event.clientX - this.axisX)/6)
+      this.axisX = event.clientX;
+      this.redraw();
+    }
+  }
+
+  expandTimeAxisMD(event: any)
+  {
+    this.axisX = event.clientX;
+    this.canExpandAxis = true;
+  }
+
+  expandTimeAxisMU(event: any)
+  {
+    this.canExpandAxis = false;
+  }
   //#endregion
 
   //#region events
@@ -404,7 +445,8 @@ interface LifeSegment {
   x: number,
   y: number,
   width: number,
-  height: number
+  height: number,
+  parentShape: Shape,
 }
 
 interface TextObject {

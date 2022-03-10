@@ -52,6 +52,11 @@ export class ProjectService{
             }
         )
 
+        //just some hardcoded shit
+        this.personService.getAllPersonsAsync().then(x => {
+            x.forEach(m => m.projectId = "bubbles")
+            this.members = this.members.concat(x)
+        });
     }
 
     public getById(id: string) : ProjectModel | undefined {

@@ -1,6 +1,7 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
+import { Observable } from 'rxjs';
 import { PersonV2 } from '../../core/models/person.model';
 import { ProjectModel } from '../../core/models/project.model';
 import { ProjectService } from '../../core/services/project.service';
@@ -16,6 +17,7 @@ export class ProjectComponent implements OnInit {
 
   project: ProjectModel;
   members: PersonV2[];
+  selectedMember!: PersonV2;
 
   constructor(
     private projectService: ProjectService,
@@ -47,6 +49,10 @@ export class ProjectComponent implements OnInit {
   getMembers(project: ProjectModel): PersonV2[]
   {
       return this.projectService.getMembers(project.id) ?? [];
+  }
+
+  selectedMemberChanged(member: PersonV2){
+    this.selectedMember = member;
   }
 
   createMember()

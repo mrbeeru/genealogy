@@ -2,7 +2,12 @@
 
 
 <div style="z-index:9; overflow: hidden; position: fixed; border-bottom: 2px solid #FFFFFF06;" [style.background-color]="colorset.timeAxisBackground">
-    <div #timeaxis style="user-select: none; min-width: 100vw;"></div>
+    <div #timeaxis 
+        style="user-select: none; min-width: 100vw; cursor: ew-resize;"
+        (mousemove)="expandTimeAxis($event)"
+        (mousedown)="expandTimeAxisMD($event)"
+        (mouseup)="expandTimeAxisMU($event)" >
+    </div>
 </div>
 
 
@@ -17,10 +22,9 @@
         style="user-select: none; min-width: 100vw; min-height: 100vh;" 
         [ngStyle]="{'cursor': graphDragHelper.isDraggin ? 'move' : 'default'}"
         (mousewheel)="zoom($event)" 
-        (mousemove)="mouseMove($event)" 
+        (mousemove)="dragGraph($event)" 
         (mousedown)="mouseDown($event)" 
         (mouseup)="mouseUp($event)"
-        
         >
     </div>
 </div>
