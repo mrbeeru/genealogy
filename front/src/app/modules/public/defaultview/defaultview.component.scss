@@ -8,3 +8,11 @@
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
   }
+
+  #test{
+    outline: 1px solid black;
+  }
+
+  .graph-style{
+    user-select: none;
+  }

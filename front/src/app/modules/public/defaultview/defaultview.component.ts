@@ -3,6 +3,9 @@ import { Rect, Svg, SVG as svgjs } from '@svgdotjs/svg.js';
 import { Observable } from 'rxjs/internal/Observable';
 import { PersonV2 } from '../../core/models/person.model';
 import { PersonService } from '../../core/services/person.service';
+import '@svgdotjs/svg.panzoom.js'
+import { Point } from '@svgdotjs/svg.js';
+
 
 @Component({
   selector: 'app-defaultview',
@@ -40,7 +43,7 @@ export class DefaultviewComponent implements AfterViewInit {
     segmentColorMale: "#07698a88",
     segmentColorFemale: "#ff666e88",
 
-    gridLines: "#00000008",
+    gridLines: "#00000088",
   }
 
   context!: Svg;
@@ -54,7 +57,7 @@ export class DefaultviewComponent implements AfterViewInit {
 
   gridLineWidth = 2;
   timeAxisHeight = 30;
-  segmentLength = 50;
+  segmentLength = 100;
   segmentHeight = 16;
   segmentSpacing = 2;
   segmentTextSize: number = 11;
@@ -69,9 +72,11 @@ export class DefaultviewComponent implements AfterViewInit {
     width: 0,
     height: 0,
     shapes: [],
-    xOffset: 50,
+    xOffset: 102,
     yOffset: 0,
+    scale: 1
   };
+
 
   
   @ViewChild('test') grapElement!: ElementRef<HTMLElement>;
@@ -88,36 +93,62 @@ export class DefaultviewComponent implements AfterViewInit {
 
   constructor() { }
 
+  box = 1;
+
   ngAfterViewInit(): void {
     this.persons.sort((a, b) => a.birthDate.year < b.birthDate.year ? -1 : 1)
     this.startYear = this.persons[0].birthDate.year;
     this.origin = this.persons[0];
 
 
+    // if spaceOxTaken is set, try to center
+
     this.build(this.persons);
 
-    // if spaceOxTaken is set, try to center
-    if (this.spaceOxTaken > 0 && this.globalXOffset < window.innerWidth - this.spaceOxTaken - this.graph.xOffset) {
-      let val = window.innerWidth - this.spaceOxTaken - this.globalXOffset - this.graph.xOffset
-      this.graph.xOffset = val / 2
-    }
 
     const width = Math.max(this.graph.width + 5 + 100, window.innerWidth);
     const height = Math.max(this.graph.height + 3, window.innerHeight);
+    //const width = this.graph.width + 5 + 100
+    //const height = this.graph.height + 3
 
-    this.timeAxisContext = svgjs().addTo(this.timeAxisElement.nativeElement).size(2 * width, this.timeAxisHeight)
-    this.drawTimeAxis()
+    this.timeAxisContext = svgjs().addTo(this.timeAxisElement.nativeElement).size(width, this.timeAxisHeight)
+    this.drawTimeAxis(1,0)
 
-    this.context = svgjs().addTo(this.grapElement.nativeElement).size(width, height);
+    this.context = svgjs().addTo(this.grapElement.nativeElement).size(width, height).panZoom({zoomMin: 0.25, zoomMax: 4, zoomFactor: 0.2});
+
+    this.context.on('panning', (x: any) => {
+
+      let currentBox = x.detail.box;
+      this.timeAxisContext.transform({translateX: -currentBox.x *  (this.graph.scale)})
+    })
+
+    this.context.on('zoom', (x: any) => {
+      const level = x.detail.level;
+      const focus = x.detail.focus;
+
+      this.graph.scale = level;
+      //console.log(this.context.viewbox());
+      console.log(focus.x)
+      
+      console.log(level)
+
+      
+      this.drawTimeAxis(level, focus.x);
+    })
+
     this.drawGraph(this.context, this.graph);
 
-    //'center' the graph
-    this.context.translate(this.graph.xOffset, 0)
 
-    this.gridContext = svgjs().addTo(this.gridElement.nativeElement).size(10000, 10000)
-    this.drawGrid(this.gridContext)
+    //'center' the graph
+    //this.context.translate(this.graph.xOffset, 0)
+
+    //this.gridContext = svgjs().addTo(this.gridElement.nativeElement).size(width, height).panZoom({zoomMin: 0.5, zoomMax: 2 })
+    this.drawGrid(this.context, height)
 
     this.events.subscribe(x => this.memberAdded())
+
+    this.context.viewbox(0,0,width,height)
+    //this.gridContext.viewbox(0,0,width, height)
   }
 
 
@@ -132,7 +163,7 @@ export class DefaultviewComponent implements AfterViewInit {
   initializeGlobals() {
     this.personToShapeMap = new Map<PersonV2, Shape>();
     this.personMap = {};
-    this.graph = { width: 0, height: 0, shapes: [], xOffset: this.graph.xOffset, yOffset: this.graph.yOffset };
+    this.graph = { width: 0, height: 0, shapes: [], xOffset: this.graph.xOffset, yOffset: this.graph.yOffset, scale: this.graph.scale };
 
     this.globalXOffset = 5;
     this.globalYOffset = this.timeAxisHeight + 5;
@@ -242,31 +273,33 @@ export class DefaultviewComponent implements AfterViewInit {
     return output;
   }
 
-  drawTimeAxis() {
-    let segmentFullLength = this.segmentLength + this.segmentSpacing;
+  drawTimeAxis(scale: number, focusX: number) {
+    this.timeAxisContext.clear();
+    let segmentFullLength = (this.segmentLength + this.segmentSpacing) * scale;
     let year = this.startYear - this.startYear % this.resolution;
     let endYear = this.presentYear;
     let numIterations = (endYear - this.startYear) / this.resolution
-    let accountForPartialFirstSegment = (this.startYear - year) / this.resolution * this.segmentLength;
+    let accountForPartialFirstSegment = ((this.startYear - year) / this.resolution * this.segmentLength) * scale;
+    
 
     //start 3 segments before and end 3 after
-    year -= 2 * this.resolution;
+    //year -= 2 * this.resolution;
 
-    for (let i = 0; i < numIterations + 4; i++) {
-      if (i > 0)
-        this.timeAxisContext.text(`${year}`).move(segmentFullLength * i - 10 - accountForPartialFirstSegment, 10).font({ fill: this.colorset.timeAxisForeground, size: 12, weight: '500' });
+    for (let i = 0 ; i < numIterations + 1; i++) {
+        this.timeAxisContext.text(`${year}`).move(segmentFullLength * (i+1) - 10 - accountForPartialFirstSegment, 10).font({ fill: this.colorset.timeAxisForeground, size: 12, weight: '500' });
 
       year += this.resolution;
     }
 
-    this.timeAxisContext.transform({ translateX: -2 * segmentFullLength + this.graph.xOffset })
+    console.log(focusX)
+    //this.timeAxisContext.translate(-focusX / scale, 0)
   }
 
   drawGraph(context: Svg, graph: any) {
     graph.shapes.forEach((shape: Shape) => {
       shape.lifeSegments.forEach((segment: LifeSegment) => {
         const fillColor = shape.person.gender == "f" ? this.colorset.segmentColorFemale : this.colorset.segmentColorMale;
-        let rect = context.rect(segment.width, segment.height).move(segment.x, segment.y).fill(fillColor);
+        let rect = context.rect(segment.width, segment.height).move(segment.x + this.graph.xOffset, segment.y).fill(fillColor);
 
         //select the clicked person
         rect.on('click', () => {this.selectedPerson = shape.person, this.selectedPersonChanged.emit(this.selectedPerson)})
@@ -292,30 +325,28 @@ export class DefaultviewComponent implements AfterViewInit {
     let yFather = y - heightFather + this.segmentHeight / 2
 
     //draw relation line
-    context.line(x, y - Math.max(heightMother, heightFather) + this.segmentHeight / 2, x, y).stroke({ color: color, width: 1, linecap: 'round' })
+    context.line(x + this.graph.xOffset, y - Math.max(heightMother, heightFather) + this.segmentHeight / 2, x + this.graph.xOffset, y).stroke({ color: color, width: 1, linecap: 'round' })
 
     //draw bumps
-    context.circle(6).move(x - 3, yMother - 3).fill(color)
-    context.circle(6).move(x - 3, yFather - 3).fill(color)
+    context.circle(6).move(x - 3 + this.graph.xOffset, yMother - 3).fill(color)
+    context.circle(6).move(x - 3 + this.graph.xOffset, yFather - 3).fill(color)
   }
 
   drawNameText(context: Svg, text: string, color: string, size: number, x: number, y: number) {
-    context.text(text).move(x, y).font({ fill: color, size: size, weight: '500' });
+    context.text(text).move(x + this.graph.xOffset, y).font({ fill: color, size: size, weight: '500' });
   }
 
-  drawGrid(context: Svg) {
+  drawGrid(context: Svg, height: number) {
     let endYear = this.presentYear;
     let numIterations = (endYear - this.startYear) / this.resolution
 
-    let segmentFullLength = this.segmentLength + this.segmentSpacing
+    let segmentFullLength = (this.segmentLength + this.segmentSpacing)
     let accountForPartialFirstSegment = ((this.startYear % this.resolution) / this.resolution) * (this.segmentLength + this.segmentSpacing);
 
-    for (let i = 0; i < numIterations + 4; i++) {
+    for (let i = 1; i < numIterations + 2; i++) {
       const xPos = i * segmentFullLength + 5 - accountForPartialFirstSegment - 1;
-      context.line(xPos, 0, xPos, 10000).stroke({ color: this.colorset.gridLines, width: this.gridLineWidth })
+      context.line(xPos , 0, xPos, height).stroke({ color: this.colorset.gridLines, width: this.gridLineWidth })
     }
-
-    context.transform({ translateX: -2 * segmentFullLength + this.graph.xOffset })
   }
 
   redraw() {
@@ -334,8 +365,8 @@ export class DefaultviewComponent implements AfterViewInit {
     this.gridContext.size(10000, 10000)
 
     this.drawGraph(this.context!, this.graph);
-    this.drawTimeAxis();
-    this.drawGrid(this.gridContext)
+    this.drawTimeAxis(1,5);
+    this.drawGrid(this.gridContext, height)
   }
 
   resolutionCmpWith(x: any, y: any) {
@@ -348,90 +379,7 @@ export class DefaultviewComponent implements AfterViewInit {
 
   }
 
-  graphDragHelper = {
-    //if user is currently dragging the graph
-    isDraggin: false,
 
-    //initial mouse position when dragging began
-    startPosition: { x: 0, y: 0 },
-
-    //used to skip drawing if too often
-    drawDelay: 4,
-
-    //
-    lastDraw: Date.now(),
-
-    canDrag() {
-      if (this.isDraggin == false)
-        return false;
-
-      if (Date.now() - this.lastDraw > this.drawDelay)
-        return true;
-
-      return false;
-    },
-
-    drag(context: Svg, translateX: number, translateY: number) {
-      context?.transform({
-        translateX: translateX,
-        translateY: translateY,
-      })
-
-      this.lastDraw = Date.now();
-    }
-  }
-
-  dragGraph(event: any) {
-    if (this.graphDragHelper.canDrag()) {
-      let tx = this.graph.xOffset + event.clientX - this.graphDragHelper.startPosition.x;
-      let ty = this.graph.yOffset + event.clientY - this.graphDragHelper.startPosition.y;
-
-      this.graphDragHelper.drag(this.context!, tx, ty)
-
-      // account for the 3 extra segments
-      let translateX = 2 * (this.segmentLength + this.segmentSpacing)
-      this.timeAxisContext.transform({ translateX: -translateX + tx })
-      this.gridContext.transform({ translateX: -translateX + tx })
-    }
-  }
-
-  mouseDown(event: any) {
-    this.graphDragHelper.isDraggin = true;
-
-    this.graphDragHelper.startPosition.x = event.clientX
-    this.graphDragHelper.startPosition.y = event.clientY
-  }
-
-  mouseUp(event: any) {
-    this.graphDragHelper.isDraggin = false;
-
-    this.graph.xOffset = this.graph.xOffset - this.graphDragHelper.startPosition.x + event.clientX
-    this.graph.yOffset = this.graph.yOffset - this.graphDragHelper.startPosition.y + event.clientY
-  }
-  
-  axisX = 0;  
-  canExpandAxis = false;
-
-  expandTimeAxis(event: any)
-  {
-    if (this.canExpandAxis && (this.segmentLength > 5 || event.clientX > this.axisX))
-    {
-      this.segmentLength += ((event.clientX - this.axisX)/6)
-      this.axisX = event.clientX;
-      this.redraw();
-    }
-  }
-
-  expandTimeAxisMD(event: any)
-  {
-    this.axisX = event.clientX;
-    this.canExpandAxis = true;
-  }
-
-  expandTimeAxisMU(event: any)
-  {
-    this.canExpandAxis = false;
-  }
   //#endregion
 
   //#region events
@@ -468,6 +416,7 @@ interface Graph {
   height: number,
   xOffset: number,
   yOffset: number,
+  scale: number,
   shapes: Shape[]
 }
 
