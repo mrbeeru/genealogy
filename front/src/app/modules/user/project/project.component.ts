@@ -14,9 +14,10 @@ import { CreateMemberDialogComponent } from '../create-member-dialog/create-memb
 })
 export class ProjectComponent implements OnInit {
   @Output() memberAdded: EventEmitter<PersonV2> = new EventEmitter<PersonV2>();
+  @Output() membersChanged: EventEmitter<PersonV2[]> = new EventEmitter<PersonV2[]>();
 
-  project: ProjectModel;
-  members: PersonV2[];
+  project!: ProjectModel;
+  members!: PersonV2[];
   selectedMember!: PersonV2;
 
   constructor(
@@ -24,31 +25,35 @@ export class ProjectComponent implements OnInit {
     private route: ActivatedRoute,
     private dialog: MatDialog
   ) { 
+  }
+
+  async ngOnInit(): Promise<void> {
     let id = this.route.snapshot.paramMap.get('id')
+    
+    let proj = await this.getProjectAsync(id);
+    let members = await this.getMembersAsync(proj);
 
-    this.project = this.getProject(id);
-    this.members = this.getMembers(this.project); 
+    this.project = proj;
+    this.members = members;
+    this.membersChanged.emit(members);
   }
 
-  ngOnInit(): void {
-    this.memberAdded.emit(undefined);
-  }
-
-  getProject(id: string | null)
+  async getProjectAsync(id: string | null)
   {
     if (id == null)
-      throw new Error("Null id")
+      throw new Error('No id url parameter')
 
-    let proj = this.projectService.getById(id)
+    let proj = await this.projectService.getProjectByIdAsync(id)
+
     if (proj == null)
-      throw new Error(`Project with id '${id}' does not exist`)
+      throw new Error(`Could not find project with id '${id}'`)
 
     return proj;
   }
 
-  getMembers(project: ProjectModel): PersonV2[]
+  async getMembersAsync(project: ProjectModel): Promise<PersonV2[]>
   {
-      return this.projectService.getMembers(project.id) ?? [];
+      return await this.projectService.getProjectMembersAsync(project.id) ?? [];
   }
 
   selectedMemberChanged(member: PersonV2){
@@ -71,4 +76,24 @@ export class ProjectComponent implements OnInit {
       }
     });
   }
+
+  addChild(parent: PersonV2)
+  {
+    const dialogRef = this.dialog.open(CreateMemberDialogComponent, {data: {parent: parent}});
+
+    dialogRef.afterClosed().subscribe((child: PersonV2) => {
+
+      if (child != null){
+        child.id = Date.now().toString();
+      
+        this.members.push(child);
+
+        //aldo add to spouse children ids?
+        (parent.childrenIds = parent.childrenIds || []).push(child.id)
+        console.log(this.members)
+        this.memberAdded.emit(child);
+      }
+    });
+  }
+
 }

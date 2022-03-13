@@ -13,7 +13,7 @@
     </div>
     <div class="row"> 
         <div  class="d-flex justify-content-between">
-            <app-defaultview [persons]="members" [events]="memberAdded.asObservable()" (selectedPersonChanged)="selectedMemberChanged($event)" [spaceOxTaken]="556"></app-defaultview>
+            <app-defaultview [persons]="members" [membersChanged]="membersChanged.asObservable()" [memberAdded]="memberAdded.asObservable()" (selectedPersonChanged)="selectedMemberChanged($event)" [spaceOxTaken]="556"></app-defaultview>
             <!-- <div class="col-md-6 col-xl-3" *ngFor="let member of members">
                 <div class="mat-elevation-z2 m-2 p-3" style="background-color: white; border-radius: 8px;">
                     <div style="color: #3c4043;font-size: .875rem; font-weight: 500;">
@@ -22,8 +22,12 @@
                 </div>
             </div> -->
             <div style="width: 300px; background-color: white; z-index: 10; right:0; position: fixed; height:100%; border-left: 1px solid #DDD;">
+                <span *ngIf="!selectedMember">Select a person on the graph</span>
                 <div *ngIf="selectedMember">
-                    {{selectedMember.firstName}}
+                    {{selectedMember.firstName}} {{selectedMember.lastName}}
+                    <div>
+                        <button mat-button (click)="addChild(selectedMember)">Add child</button>
+                    </div>
                 </div>
             </div>
         </div>

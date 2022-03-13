@@ -15,7 +15,7 @@ export class PersonService {
     async getAllPersonsAsync() : Promise<PersonV2[]>
     {
         return await lastValueFrom(this.http.get<PersonV2[]>(`${environment.appUrl}/Persons`));
-    }
+    } 
 }
 
 

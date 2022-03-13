@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { PersonV2 } from '../../core/models/person.model';
 
 @Component({
@@ -33,10 +33,39 @@ export class CreateMemberDialogComponent implements OnInit {
     childrenIds: new FormControl(null)
   })
 
+  inputData: any = undefined;
 
-  constructor(public dialogRef: MatDialogRef<CreateMemberDialogComponent>) { }
+  constructor(
+    public dialogRef: MatDialogRef<CreateMemberDialogComponent>, 
+    @Inject(MAT_DIALOG_DATA) public data: any) 
+  { 
+    this.inputData = data;
+
+    if (data?.parent != null)
+    {
+      this.hookValues(data.parent)
+    }
+  }
 
   ngOnInit(): void {
+
+  }
+
+  hookValues(parent: PersonV2)
+  {
+    if (parent.gender == 'm'){
+      this.newMemberForm.controls["fatherId"].setValue(parent.id);
+
+      if (parent.spouseIds != null && parent.spouseIds.length > 0)
+        this.newMemberForm.controls["motherId"].setValue(parent.spouseIds[0]);
+    }
+    else
+    {
+      this.newMemberForm.controls["motherId"].setValue(parent.id);
+
+      if (parent.spouseIds != null && parent.spouseIds.length > 0)
+        this.newMemberForm.controls["fatherId"].setValue(parent.spouseIds[0]);
+    }
 
   }
 

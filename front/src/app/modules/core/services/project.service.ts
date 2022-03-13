@@ -1,4 +1,7 @@
+import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
+import { lastValueFrom } from "rxjs";
+import { environment } from "src/environments/environment";
 import { PersonV2 } from "../models/person.model";
 import { ProjectModel } from "../models/project.model";
 import { PersonService } from "./person.service";
@@ -10,7 +13,8 @@ export class ProjectService{
     members: PersonV2[] = []
 
     constructor(
-        private personService: PersonService
+        private readonly personService: PersonService,
+        private readonly http: HttpClient,
     ){
         this.projects.push(
             {id: "jesus", name: "jesus christ", memberCount: 1, visibility: "shared"},
@@ -59,15 +63,16 @@ export class ProjectService{
         });
     }
 
-    public getById(id: string) : ProjectModel | undefined {
-        return this.projects.find(x => x.id == id);
+    public async getProjectByIdAsync(id: string) : Promise<ProjectModel | undefined> {
+        return await lastValueFrom(this.http.get<ProjectModel>(`${environment.appUrl}/Projects/${id}`));
     }
 
-    public getMembers(projectId: string): PersonV2[] | undefined{
-        return this.members.filter(x => x.projectId == projectId)
+    
+    public async getProjectMembersAsync(id: string): Promise<PersonV2[]>{
+        return await lastValueFrom(this.http.get<PersonV2[]>(`${environment.appUrl}/Persons?projectId=${id}`));
     }
 
-    public getProjects() : ProjectModel[]{
-        return this.projects;
+    public async getProjectsAsync() : Promise<ProjectModel[]>{
+        return await lastValueFrom(this.http.get<ProjectModel[]>(`${environment.appUrl}/Projects`));
     }
 }

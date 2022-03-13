@@ -11,17 +11,18 @@ import { CreateProjectDialogComponent } from '../create-project-dialog/create-pr
 })
 export class ProjectsOverviewComponent implements OnInit {
 
-  projects: ProjectModel[];
+  projects!: ProjectModel[];
 
   constructor(
     private dialog: MatDialog,
     private projectService: ProjectService) 
   {
-    this.projects = this.projectService.getProjects();
   }
 
-  ngOnInit(): void {
-   
+  async ngOnInit(): Promise<void> 
+  {
+    this.projects = await this.projectService.getProjectsAsync();
+    
   }
 
   createProject(){
