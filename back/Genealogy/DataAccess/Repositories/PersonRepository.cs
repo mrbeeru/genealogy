@@ -1,4 +1,5 @@
 ﻿using Genealogy.DataAccess.Entities;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Genealogy.DataAccess.Repositories

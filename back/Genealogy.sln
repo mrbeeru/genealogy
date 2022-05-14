@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32104.313
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Genealogy", "Genealogy\Genealogy.csproj", "{E17102A6-2027-4E32-A6AB-746CE465344B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genealogy", "Genealogy\Genealogy.csproj", "{E17102A6-2027-4E32-A6AB-746CE465344B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Genealogy.TEST", "Genealogy.TEST\Genealogy.TEST.csproj", "{9AD388ED-1187-494D-9D94-20CE36ADFE9D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{E17102A6-2027-4E32-A6AB-746CE465344B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E17102A6-2027-4E32-A6AB-746CE465344B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E17102A6-2027-4E32-A6AB-746CE465344B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9AD388ED-1187-494D-9D94-20CE36ADFE9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AD388ED-1187-494D-9D94-20CE36ADFE9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AD388ED-1187-494D-9D94-20CE36ADFE9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AD388ED-1187-494D-9D94-20CE36ADFE9D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -14,6 +14,7 @@ builder.Services.AddSingleton<IMongoClient>(c => new MongoClient(c.GetService<IO
 builder.Services.AddScoped(c => c.GetService<IMongoClient>().StartSession());
 
 builder.Services.AddScoped<IPersonRepository, PersonRepository>();
+builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 // Add services to the container.
 
 builder.Services.AddControllers();

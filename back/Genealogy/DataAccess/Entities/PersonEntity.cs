@@ -7,6 +7,7 @@ namespace Genealogy.DataAccess.Entities
     [BsonCollection("persons")]
     public class PersonEntity : EntityBase
     {
+        public string ProjectId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Gender { get; set; }
