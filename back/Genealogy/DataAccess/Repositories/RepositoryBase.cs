@@ -22,7 +22,6 @@ namespace Genealogy.DataAccess.Repositories
                 mongoClient.GetDatabase(DATABASE).CreateCollection(collectionName);
 
             Collection = mongoClient.GetDatabase(DATABASE).GetCollection<T>(collectionName);
-
         }
 
         public IMongoCollection<T> Collection { get; }

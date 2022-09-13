@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  appUrl: 'http://anbu2.go.ro:10010/api'
+  appUrl: 'http://45.148.30.77:10010/api'
 };

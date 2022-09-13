@@ -5,6 +5,8 @@ import { PersonV2 } from '../../core/models/person.model';
 import { PersonService } from '../../core/services/person.service';
 import '@svgdotjs/svg.panzoom.js'
 import { Point } from '@svgdotjs/svg.js';
+import { PersonGlyph } from '../../graphs/elements/glyphs/PersonGlyph';
+import { DefaultGraph } from '../../graphs/DefaultGraph';
 
 
 @Component({
@@ -98,8 +100,16 @@ export class DefaultviewComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.membersChanged.subscribe(x => {this.persons = x; this.redraw()});
-    this.memberAdded.subscribe(x => this.redraw())
+    this.membersChanged.subscribe(x => {
+        this.persons = x; 
+        this.context = svgjs().addTo(this.grapElement.nativeElement).size(2000, 3000).panZoom({zoomMin: 0.25, zoomMax: 4, zoomFactor: 0.2})
+        this.context.viewbox(0,0,2000,3000)
+        var graph = new DefaultGraph(this.persons)
+        graph.draw(this.context)  
+      });
+
+    //this.membersChanged.subscribe(x => {this.persons = x; this.redraw()})
+    //this.memberAdded.subscribe(x => this.redraw())
   }
 
   initializeSvgContexts(){

@@ -32,7 +32,6 @@ export class ProjectComponent implements OnInit {
     
     let proj = await this.getProjectAsync(id);
     let members = await this.getMembersAsync(proj);
-
     this.project = proj;
     this.members = members;
     this.membersChanged.emit(members);
