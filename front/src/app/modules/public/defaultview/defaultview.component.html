@@ -14,49 +14,14 @@
 </div> -->
 
 <div class="d-flex flex-column">
-    <div style="overflow: hidden; border-bottom: 2px solid #FFFFFF06;" [style.background-color]="colorset.timeAxisBackground">
+    <div style="overflow: hidden; border-bottom: 2px solid #FFFFFF06; background-color: #f9f9f9;">
         <div #timeaxis style="user-select: none; min-width: 100vw; cursor: ew-resize;">
         </div>
     </div>
     
 
     <div style="overflow: hidden; ">
-        <div #test class="graph-style">
+        <div #graph class="graph-style">
         </div>
     </div>
-</div>
-
-
-
-<div class="d-flex" style="position: fixed; right: 0; z-index: 99">
-    <div> 
-        <button mat-raised-button (click)="drawer.toggle()"> 
-            <mat-icon *ngIf="drawer.opened">menu_close</mat-icon> 
-            <mat-icon *ngIf="!drawer.opened">menu_open</mat-icon> 
-        </button>
-    </div>  
-    <mat-drawer-container style="height: 100vh;" >
-        <mat-drawer #drawer position="end" mode="side" opened="false">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col">
-                        <mat-label style="white-space: nowrap;">Text size: {{segmentTextSize}}</mat-label>
-                        <mat-slider class="w-100" [(ngModel)]="segmentTextSize" (change)="redraw()"  thumbLabel tickInterval="1" step="1" min="10" max="32" aria-label="units"> </mat-slider>
-                        <mat-label style="white-space: nowrap;">Pixels per segment: {{segmentLength}}</mat-label>
-                        <mat-slider class="w-100" [(ngModel)]="segmentLength" (change)="redraw()"  thumbLabel tickInterval="5" step="5" min="5" max="200" aria-label="units"> </mat-slider>
-
-                        <mat-form-field appearance="standard">
-                            <mat-label>Select an option</mat-label>
-                            <mat-select [(value)]="resolution" (valueChange)="redraw()" [compareWith]="resolutionCmpWith">
-                              <mat-option [value]="1">1 Year</mat-option>
-                              <mat-option [value]="5">5 Years</mat-option>
-                              <mat-option [value]="10">10 Years</mat-option>
-                              <mat-option [value]="20">20 Years</mat-option>
-                            </mat-select>
-                          </mat-form-field>
-                    </div>
-                </div>
-            </div>
-        </mat-drawer>
-    </mat-drawer-container>
 </div>

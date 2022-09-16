@@ -1,27 +1,39 @@
+import { Line } from "@svgdotjs/svg.js";
 import { G } from "@svgdotjs/svg.js";
 import { Svg } from "@svgdotjs/svg.js";
 
 export class TimeAxis
 {
-    timeAxisForeground = "black";
-
     private startYear: number;
     private endYear: number;
     private resolution: number;
     private segmentLength: number;
 
     private group!: G 
+    private line!: Line
 
-    constructor(config: any) {
+    private colors: {
+        gridIndicator: "#000",
+        timeAxisForeground: "#000"
+    };
+
+    constructor(config: any, colors: any) {
         this.resolution = config.resolution;
         this.segmentLength = config.segmentLength;
         this.startYear = config.startYear;
         this.endYear = config.endYear;
+        this.colors = colors;
     }
 
     move(x: number)
     {
         this.group.translate(x, 0);
+        this.line.translate(x, 0)
+    }
+
+    moveIndicator(x: number)
+    {
+        this.line.transform({translateX: x})
     }
 
     draw(context: Svg)
@@ -36,8 +48,10 @@ export class TimeAxis
 
         for (let i = 0; i < iterations; i++)
         {
-            let txt = context.text(`${year + i * this.resolution}`).move( (i)* this.segmentLength - textWidth / 2 - diff , 10).font({ fill: this.timeAxisForeground, size: 12, weight: '500' });
+            let txt = context.text(`${year + i * this.resolution}`).move( (i)* this.segmentLength - textWidth / 2 - diff , 10).font({ fill: this.colors.timeAxisForeground, size: 12, weight: '500' });
             this.group.add(txt);
         }
+
+        this.line = context.line(0, 0, 0, 100).stroke({ color: this.colors.gridIndicator, width: 5 })
     }
 }

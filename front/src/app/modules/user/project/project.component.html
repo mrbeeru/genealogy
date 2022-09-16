@@ -16,7 +16,7 @@
     </div>
     <div class="row"> 
         <div  class="d-flex justify-content-between">
-            <app-defaultview [persons]="members" [membersChanged]="membersChanged.asObservable()" [memberAdded]="memberAdded.asObservable()" (selectedPersonChanged)="selectedMemberChanged($event)" [spaceOxTaken]="556"></app-defaultview>
+            <app-defaultview [persons]="members" [membersChanged]="membersChanged.asObservable()" [memberAdded]="memberAdded.asObservable()" (selectedPersonChanged)="selectedMemberChanged($event)"></app-defaultview>
             <!-- <div class="col-md-6 col-xl-3" *ngFor="let member of members">
                 <div class="mat-elevation-z2 m-2 p-3" style="background-color: white; border-radius: 8px;">
                     <div style="color: #3c4043;font-size: .875rem; font-weight: 500;">

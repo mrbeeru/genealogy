@@ -9,16 +9,24 @@ export class GridGlyph implements IGlyph
     resolution: number; 
     segmentLength: number;
 
-    private gridLineColor: string = "#0000001F";
+
+    private colors: {
+        gridLines: "#000",
+        gridIndicator: "#000"
+    }
+
     private gridLineWidth: number = 1;
 
     private gridLines: Line[] = [];
+    private indicatorLine!: Line;
 
-    constructor(startYear: number, presentYear: number, resolution: number, segmentLength: number) {
+    constructor(startYear: number, presentYear: number, resolution: number, segmentLength: number, colors: any) {
         this.startYear = startYear;
         this.resolution = resolution;
         this.segmentLength = segmentLength;
-        this.presentYear = presentYear;   
+        this.presentYear = presentYear;
+
+        this.colors = colors;
     }
 
     draw(context: Svg): void {
@@ -29,17 +37,24 @@ export class GridGlyph implements IGlyph
     
         for (let i = 0; i < numIterations + 1; i++) {
           const xPos = i * this.segmentLength - diff;
-          let line = context.line(xPos , 0, xPos, height).stroke({ color: this.gridLineColor, width: this.gridLineWidth })
+          let line = context.line(xPos , 0, xPos, height).stroke({ color: this.colors.gridLines, width: this.gridLineWidth })
           this.gridLines.push(line)
         }
+
+        this.indicatorLine = context.line(0 , 0, 0, 2000).stroke({ color: this.colors.gridIndicator, width: 2 })
+        this.indicatorLine.attr({"stroke-dasharray": 5})
     }
 
     dragMove(x: number, y: number)
     {
         for (let line of this.gridLines)
-        {
             line.translate(x, 0)
-        }
+
+        this.indicatorLine.translate(x, 0)
+    }
+
+    moveIndicator(x: number){
+        this.indicatorLine.transform({translateX: x})
     }
     
 }
