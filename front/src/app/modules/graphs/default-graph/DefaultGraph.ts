@@ -1,16 +1,17 @@
 
 import { Svg } from '@svgdotjs/svg.js';
 import { PersonV2 } from 'src/app/modules/core/models/person.model';
-import { IGlyph } from './elements/glyphs/IGlyph';
-import { PersonGlyph } from './elements/glyphs/PersonGlyph';
-import { RelationGlyph } from './elements/glyphs/RelationGlyph';
+import { GridGlyph } from './glyphs/GridGlyph';
+import { IGlyph } from './glyphs/IGlyph';
+import { PersonGlyph } from './glyphs/PersonGlyph';
+import { RelationGlyph } from './glyphs/RelationGlyph';
 
 export class DefaultGraph {
 
     config = {
         segmentLength: 100,
         segmentHeight: 14,
-        segmentSpacing: 3,
+        segmentSpacing: 0,
         resolution: 10,
 
         timeAxisBackground: "#f9f9f9",
@@ -28,7 +29,7 @@ export class DefaultGraph {
 
     private startYear = 0;
     private members: PersonV2[];
-    private xOffset = 10;
+    private xOffset = 0;
     private yOffset = 10;
     private glyphs: IGlyph[] = [];
 
@@ -41,6 +42,14 @@ export class DefaultGraph {
         this.glyphs.forEach(x => x.draw(context));
     }
 
+    move(x: number, y:number)
+    {
+        for (let glyph of this.glyphs)
+        {
+            glyph.dragMove(x,y)
+        }
+    }
+
     private build() {
         let origins = this.members
             .filter(x => x.fatherId == null && x.motherId == null)
@@ -48,6 +57,7 @@ export class DefaultGraph {
 
         this.startYear = origins[0].birthDate.year;
         this.buildPerson(origins[0])
+        this.buildGrid()
     }
 
     private buildPerson(person: PersonV2) {
@@ -80,11 +90,17 @@ export class DefaultGraph {
             .map(y => this.buildPerson(y))
     }
 
+    private buildGrid()
+    {
+        let gridGlyph = new GridGlyph(this.startYear, 2022, this.config.resolution, this.config.segmentLength)
+        this.glyphs.push(gridGlyph);
+    }
+
     private getLifespanOffset(person: PersonV2) {
         let resolution = this.config.resolution;
         let segmentLength = this.config.segmentLength;
         let segmentSpacing = this.config.segmentSpacing;
 
-        return (person.birthDate.year - this.startYear) / resolution * segmentLength + segmentSpacing * (Math.floor((person.birthDate.year - (Math.floor(this.startYear / resolution) * resolution)) / resolution)) + 5;
+        return (person.birthDate.year - this.startYear) / resolution * segmentLength + segmentSpacing * (Math.floor((person.birthDate.year - (Math.floor(this.startYear / resolution) * resolution)) / resolution));
     }
 }

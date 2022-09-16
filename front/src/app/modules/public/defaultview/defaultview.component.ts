@@ -5,9 +5,10 @@ import { PersonV2 } from '../../core/models/person.model';
 import { PersonService } from '../../core/services/person.service';
 import '@svgdotjs/svg.panzoom.js'
 import { Point } from '@svgdotjs/svg.js';
-import { PersonGlyph } from '../../graphs/elements/glyphs/PersonGlyph';
-import { DefaultGraph } from '../../graphs/DefaultGraph';
-
+import { PersonGlyph } from '../../graphs/default-graph/glyphs/PersonGlyph';
+import { DefaultGraph } from '../../graphs/default-graph/DefaultGraph';
+import { TimeAxis } from '../../graphs/default-graph/TimeAxis';
+import '@svgdotjs/svg.draggable.js'
 
 @Component({
   selector: 'app-defaultview',
@@ -61,7 +62,7 @@ export class DefaultviewComponent implements AfterViewInit {
   timeAxisHeight = 30;
   segmentLength = 100;
   segmentHeight = 14;
-  segmentSpacing = 2;
+  segmentSpacing = 0;
   segmentTextSize: number = 11;
   descendantSpacing = 30;
   globalXOffset = 5;
@@ -78,7 +79,6 @@ export class DefaultviewComponent implements AfterViewInit {
     yOffset: 0,
     scale: 1
   };
-
 
   
   @ViewChild('test') grapElement!: ElementRef<HTMLElement>;
@@ -99,17 +99,71 @@ export class DefaultviewComponent implements AfterViewInit {
 
   }
 
+  g1! : DefaultGraph;
+  tx! : TimeAxis;
+
+  drag = {x: 0, y: 0}
+
   ngAfterViewInit(): void {
     this.membersChanged.subscribe(x => {
-        this.persons = x; 
-        this.context = svgjs().addTo(this.grapElement.nativeElement).size(2000, 3000).panZoom({zoomMin: 0.25, zoomMax: 4, zoomFactor: 0.2})
-        this.context.viewbox(0,0,2000,3000)
-        var graph = new DefaultGraph(this.persons)
-        graph.draw(this.context)  
+        //this.persons = x; 
+        //this.context = svgjs().addTo(this.grapElement.nativeElement).size(2000, 3000).panZoom({zoomMin: 0.125, zoomMax: 8, zoomFactor: 0.2})
+        //this.context.viewbox(0,0,2000,3000)
+//
+        //this.timeAxisContext = svgjs().addTo(this.timeAxisElement.nativeElement).size(2000, 30)
+        //this.timeAxisContext.panZoom({zoomMin: 1, zoomMax: 1, margins: {top: 0, left: -2000, right: 0, bottom: 0}})
+        //this.timeAxisContext.viewbox(0,0,2000,30)
+//
+        //var tx = new TimeAxis() 
+        //tx.draw(this.timeAxisContext)
+//
+        //this.g1 = new DefaultGraph(this.persons)
+        //this.g1.draw(this.context)  
+
+
+        //////////////////////////
+
+        this.persons = x;
+
+
+
+
+        this.context = svgjs().addTo(this.grapElement.nativeElement).size(2000, 3000);
+        this.g1 = new DefaultGraph(this.persons);
+        this.g1.draw(this.context);
+
+        this.timeAxisContext = svgjs().addTo(this.timeAxisElement.nativeElement).size(2000, 30)
+        this.tx = new TimeAxis({segmentLength: 100, startYear: 1911, endYear: 2022, resolution: 10})
+        this.tx.draw(this.timeAxisContext)
+
+        this.addDragMove();
       });
 
     //this.membersChanged.subscribe(x => {this.persons = x; this.redraw()})
     //this.memberAdded.subscribe(x => this.redraw())
+  }
+
+  private addDragMove(){
+
+    this.context.draggable().on('dragmove', (e:any) => {
+      e.preventDefault()
+
+        let dx= e.detail.box.x - this.drag.x;
+        let dy= e.detail.box.y - this.drag.y;
+        
+        this.drag.x += dx;
+        this.drag.y += dy;
+        
+        this.g1.move(dx,dy)
+        this.tx.move(dx)
+    }) 
+
+    this.context.on('dragstart', (e:any) => {
+      e.preventDefault()
+
+      this.drag = {x: e.detail.box.x, y: e.detail.box.y};
+    }) 
+
   }
 
   initializeSvgContexts(){
@@ -359,7 +413,7 @@ export class DefaultviewComponent implements AfterViewInit {
 
   doPanning(context: Svg, panEvent: any) {
     let currentBox = panEvent.detail.box;
-    context.transform({translateX: -currentBox.x *  (this.graph.scale)})
+    context.transform({translateY: -currentBox.y *  (this.graph.scale)})
   }
 
 

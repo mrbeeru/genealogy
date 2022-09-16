@@ -13,13 +13,13 @@
     </div>
     <div class="row" >  
         <div class="col-md-6 col-xl-3" *ngFor="let project of projects">
-            <div class="mat-elevation-z2 m-2 p-3" style="background-color: white; border-radius: 8px;" [routerLink]="'/project/' + project.id">
+            <div class="mat-elevation-z2 m-2 p-3" style="background-color: white; border-radius: 8px; cursor: pointer;" [routerLink]="'/project/' + project.id">
                 <div style="color: #3c4043;font-size: .875rem; font-weight: 500;">
                     {{project.name}}
                 </div>
 
                 <div style="color: #5f6368; font-size: .75rem;">
-                    {{project.memberCount}} {{project.memberCount == 1 ? "member" : "members"}} · {{project.visibility | titlecase}}
+                    Updated · {{project.createdAt | date}}
                 </div>
             </div>
         </div>

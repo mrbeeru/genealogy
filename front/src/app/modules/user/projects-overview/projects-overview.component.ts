@@ -22,6 +22,7 @@ export class ProjectsOverviewComponent implements OnInit {
   async ngOnInit(): Promise<void> 
   {
     this.projects = await this.projectService.getProjectsAsync();
+    this.projects.forEach(x => x.createdAt = parseInt(x.id.substring(0,8), 16) * 1000)
     
   }
 

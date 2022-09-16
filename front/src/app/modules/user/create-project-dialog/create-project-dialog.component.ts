@@ -19,11 +19,14 @@ export class CreateProjectDialogComponent implements OnInit {
   }
 
   onOkClick(projectName: string){
+    let date = Date.now();
+
     let project: ProjectModel = {
-      id: (Date.now().toString()),
+      id: (date.toString()),
       name: projectName,
       memberCount: 0,
-      visibility: "private"
+      visibility: "private",
+      createdAt: date
     }
 
     this.dialogRef.close(project)
