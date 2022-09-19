@@ -1,4 +1,4 @@
-import { Line } from "@svgdotjs/svg.js";
+import { Line, Text } from "@svgdotjs/svg.js";
 import { G } from "@svgdotjs/svg.js";
 import { Svg } from "@svgdotjs/svg.js";
 
@@ -8,9 +8,11 @@ export class TimeAxis
     private endYear: number;
     private resolution: number;
     private segmentLength: number;
+    private xOffset: number;
 
-    private group!: G 
-    private line!: Line
+    private group!: G;
+    private line!: Line;
+    private txt!: Text;
 
     private colors: {
         gridIndicator: "#000",
@@ -23,17 +25,25 @@ export class TimeAxis
         this.startYear = config.startYear;
         this.endYear = config.endYear;
         this.colors = colors;
+        this.xOffset = config.xOffset;
     }
 
     move(x: number)
     {
         this.group.translate(x, 0);
         this.line.translate(x, 0)
+        this.txt.translate(x, 0)
     }
 
-    moveIndicator(x: number)
+    moveIndicator(x: number, dragX: number)
     {
         this.line.transform({translateX: x})
+        this.txt.transform({translateX: x})
+
+        //update year indicator
+        let year = (x-dragX) / (this.segmentLength/this.resolution) + this.startYear - this.startYear%this.resolution
+        this.txt.text(`${year}`)
+        console.log(x, dragX)
     }
 
     draw(context: Svg)
@@ -48,10 +58,11 @@ export class TimeAxis
 
         for (let i = 0; i < iterations; i++)
         {
-            let txt = context.text(`${year + i * this.resolution}`).move( (i)* this.segmentLength - textWidth / 2 - diff , 10).font({ fill: this.colors.timeAxisForeground, size: 12, weight: '500' });
+            let txt = context.text(`${year + i * this.resolution}`).move( (i)* this.segmentLength - textWidth / 2 - diff + this.xOffset , 16).font({ fill: this.colors.timeAxisForeground, size: 12, weight: '500' });
             this.group.add(txt);
         }
 
-        this.line = context.line(0, 0, 0, 100).stroke({ color: this.colors.gridIndicator, width: 5 })
+        this.line = context.line(0, 0, 0, 40).stroke({ color: this.colors.gridIndicator, width: 6 })
+        this.txt = context.text("0000").font({ fill: this.colors.timeAxisForeground, size: 14, weight: '500' }).move(-16, 0);
     }
 }

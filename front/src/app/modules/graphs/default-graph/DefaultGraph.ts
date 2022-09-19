@@ -35,7 +35,7 @@ export class DefaultGraph {
     private startYear = 0;
     private endYear = 2022;
     private members: PersonV2[];
-    private xOffset = 0;
+    //private xOffset = 100 ;
     private yOffset = 10;
     private glyphs: IGlyph[] = [];
 
@@ -45,7 +45,7 @@ export class DefaultGraph {
     private timeAxis!: TimeAxis;
     private grid!: GridGlyph;
 
-    private drag = {x: 0, y: 0, isDragging: false}
+    private drag = {x: 100, y: 0, isDragging: false}
 
 
     constructor(members: PersonV2[], ctx: Svg, timeAxisCtx: Svg) {
@@ -62,6 +62,13 @@ export class DefaultGraph {
     draw() {
         this.glyphs.forEach(x => x.draw(this.ctx));
         this.timeAxis.draw(this.timeAxisCtx);
+
+        //move to the right a bit
+        this.drag.x += - (this.startYear%this.config.resolution) / this.config.resolution * this.config.segmentLength
+        console.log(this.drag.x)
+        //console.log(this.drag.x)
+        //this.move(this.config.segmentLength, 0)
+        //this.timeAxis.move(this.config.segmentLength)
     }
 
 
@@ -85,7 +92,7 @@ export class DefaultGraph {
             return;
 
         // build for current person
-        let personGlyph = new PersonGlyph(this.xOffset + this.getLifespanOffset(person), this.yOffset, person, this.config)
+        let personGlyph = new PersonGlyph(this.drag.x + this.getLifespanOffset(person), this.yOffset, person, this.config)
         this.glyphs.push(personGlyph);
 
         // build for spouse
@@ -93,7 +100,7 @@ export class DefaultGraph {
             .filter(x => person.spouseIds?.includes(x.id))
             .map(spouse => {
                 this.yOffset += this.config.segmentHeight + this.config.segmentSpacing;
-                this.glyphs.push(new PersonGlyph(this.xOffset + this.getLifespanOffset(spouse), this.yOffset, spouse, this.config))
+                this.glyphs.push(new PersonGlyph(this.drag.x + this.getLifespanOffset(spouse), this.yOffset, spouse, this.config))
             })
 
         // build relations
@@ -117,7 +124,7 @@ export class DefaultGraph {
             gridLines: this.config.colors.gridLines,
         }
 
-        this.grid = new GridGlyph(this.startYear, 2022, this.config.resolution, this.config.segmentLength, colors)
+        this.grid = new GridGlyph(this.startYear, 2022, this.config.resolution, this.config.segmentLength, this.drag.x, colors)
         this.glyphs.push(this.grid);
     }
 
@@ -130,7 +137,8 @@ export class DefaultGraph {
         let cfg = {
             segmentLength: this.config.segmentLength, 
             startYear: this.startYear, endYear: this.endYear, 
-            resolution: this.config.resolution
+            resolution: this.config.resolution,
+            xOffset: this.drag.x
         }
 
         this.timeAxis = new TimeAxis(cfg, colors)
@@ -158,6 +166,8 @@ export class DefaultGraph {
             if (document.body.style.cursor !== "move")
                 document.body.style.cursor = "move";
 
+            console.log(e.detail.box.x)
+
             let dx= e.detail.box.x - this.drag.x;
             let dy= e.detail.box.y - this.drag.y;
             
@@ -166,6 +176,7 @@ export class DefaultGraph {
             
             this.move(dx,dy)
             this.timeAxis.move(dx)
+            console.log("dragmove")
         }) 
     
         this.ctx.on('dragstart', (e:any) => {
@@ -173,6 +184,7 @@ export class DefaultGraph {
 
             this.ctx.off("mousemove")
             this.drag = {x: e.detail.box.x, y: e.detail.box.y, isDragging: true};
+            console.log("dragstart", this.drag, e)
         })
     
         this.ctx.on('dragend', () => {
@@ -186,7 +198,7 @@ export class DefaultGraph {
     private addMouseMove(){
         this.ctx.on("mousemove", (x : any) => {
             let calc = (x.offsetX + this.config.segmentLength/this.config.resolution/2) - (x.offsetX-this.config.segmentLength/this.config.resolution/2 - this.drag.x) % (this.config.segmentLength/this.config.resolution);
-            this.timeAxis.moveIndicator(calc);
+            this.timeAxis.moveIndicator(calc, this.drag.x);
             this.grid.moveIndicator(calc);
         })
     }

@@ -47,7 +47,7 @@ export class DefaultviewComponent implements AfterViewInit {
         this.persons = x;
 
         this.context = svgjs().addTo(this.grapElement.nativeElement).size(2000, 3000);
-        this.timeAxisContext = svgjs().addTo(this.timeAxisElement.nativeElement).size(2000, 30)
+        this.timeAxisContext = svgjs().addTo(this.timeAxisElement.nativeElement).size(2000, 34)
 
         this.g1 = new DefaultGraph(this.persons, this.context, this.timeAxisContext);
         this.g1.draw();

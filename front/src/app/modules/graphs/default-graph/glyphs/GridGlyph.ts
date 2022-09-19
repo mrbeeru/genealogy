@@ -4,10 +4,11 @@ import { IGlyph } from "./IGlyph";
 
 export class GridGlyph implements IGlyph
 {
-    startYear: number; 
-    presentYear: number;
-    resolution: number; 
-    segmentLength: number;
+    private startYear: number; 
+    private presentYear: number;
+    private resolution: number; 
+    private segmentLength: number;
+    private xOffset: number;
 
 
     private colors: {
@@ -20,11 +21,12 @@ export class GridGlyph implements IGlyph
     private gridLines: Line[] = [];
     private indicatorLine!: Line;
 
-    constructor(startYear: number, presentYear: number, resolution: number, segmentLength: number, colors: any) {
+    constructor(startYear: number, presentYear: number, resolution: number, segmentLength: number, xOffset: number, colors: any) {
         this.startYear = startYear;
         this.resolution = resolution;
         this.segmentLength = segmentLength;
         this.presentYear = presentYear;
+        this.xOffset = xOffset
 
         this.colors = colors;
     }
@@ -36,7 +38,7 @@ export class GridGlyph implements IGlyph
         let diff = (this.startYear % this.resolution) / this.resolution * this.segmentLength
     
         for (let i = 0; i < numIterations + 1; i++) {
-          const xPos = i * this.segmentLength - diff;
+          const xPos = i * this.segmentLength - diff + this.xOffset;
           let line = context.line(xPos , 0, xPos, height).stroke({ color: this.colors.gridLines, width: this.gridLineWidth })
           this.gridLines.push(line)
         }
