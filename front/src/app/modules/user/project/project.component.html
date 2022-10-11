@@ -1,22 +1,28 @@
+<div style="display: flex; flex-direction: column; min-height: 100vh; height: 100%;">
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="d-flex justify-content-between w-100 align-items-center pr-4 pl-4 pt-3 pb-2" style="border-bottom: 1px solid #DDD;">
-            <div>
-                <span style="font-size: large;">{{project?.name}} </span>
-                {{members ? (" · " + members.length + " members") : ""}}
-            </div>
-            <div>
-                <button mat-button (click)="createMember()">
-                    <span class="material-icons-outlined" style="font-size: 18px;">add_box</span>
-                    Add Member
-                </button>
-            </div>
+    <div class="d-flex justify-content-between w-100 align-items-center pr-4 pl-4 pt-3 pb-2"
+        style="border-bottom: 1px solid #DDD;">
+        <div>
+            <span style="font-size: large;">{{project?.name}} </span>
+            {{members ? (" · " + members.length + " members") : ""}}
+        </div>
+        <div>
+            <button mat-button (click)="createMember()">
+                <span class="material-icons-outlined" style="font-size: 18px;">add_box</span>
+                Add Member
+            </button>
         </div>
     </div>
-    <div class="row"> 
-        <div  class="d-flex justify-content-between">
-            <app-defaultview [persons]="members" [membersChanged]="membersChanged.asObservable()" [memberAdded]="memberAdded.asObservable()" (selectedPersonChanged)="selectedMemberChanged($event)"></app-defaultview>
+
+    <div style="flex:1; overflow: hidden;">
+        <div class="d-flex justify-content-between"
+            style="flex-direction: column; min-height: 100vh; height: 100%;">
+            <div style="flex: 1">
+                <app-defaultview [persons]="members" [membersChanged]="membersChanged.asObservable()"
+                    [memberAdded]="memberAdded.asObservable()" (selectedPersonChanged)="selectedMemberChanged($event)">
+                </app-defaultview>
+            </div>
+
             <!-- <div class="col-md-6 col-xl-3" *ngFor="let member of members">
                 <div class="mat-elevation-z2 m-2 p-3" style="background-color: white; border-radius: 8px;">
                     <div style="color: #3c4043;font-size: .875rem; font-weight: 500;">
@@ -24,7 +30,8 @@
                     </div>
                 </div>
             </div> -->
-            <div style="width: 300px; background-color: white; z-index: 10; right:0; position: fixed; height:100%; border-left: 1px solid #DDD;">
+            <div
+                style="width: 300px; background-color: white; z-index: 10; right:0; position: fixed; height:100%; border-left: 1px solid #DDD;">
                 <span *ngIf="!selectedMember">Select a person on the graph</span>
                 <div *ngIf="selectedMember">
                     {{selectedMember.firstName}} {{selectedMember.lastName}}
@@ -35,4 +42,5 @@
             </div>
         </div>
     </div>
+
 </div>
