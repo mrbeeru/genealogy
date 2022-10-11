@@ -1,6 +1,7 @@
 
 import { Svg } from '@svgdotjs/svg.js';
 import { PersonV2 } from 'src/app/modules/core/models/person.model';
+import { FamilyTree } from '../../core/FamilyTree';
 import { GridGlyph } from './glyphs/GridGlyph';
 import { IGlyph } from './glyphs/IGlyph';
 import { PersonGlyph } from './glyphs/PersonGlyph';
@@ -34,7 +35,6 @@ export class DefaultGraph {
 
     private startYear = 0;
     private endYear = 2022;
-    private members: PersonV2[];
     //private xOffset = 100 ;
     private yOffset = 10;
     private glyphs: IGlyph[] = [];
@@ -44,12 +44,13 @@ export class DefaultGraph {
 
     private timeAxis!: TimeAxis;
     private grid!: GridGlyph;
+    private familyTree: FamilyTree;
 
     private drag = {x: 100, y: 0, isDragging: false}
 
 
     constructor(members: PersonV2[], ctx: Svg, timeAxisCtx: Svg) {
-        this.members = members;
+        this.familyTree = new FamilyTree(members);
         this.ctx = ctx;
         this.timeAxisCtx = timeAxisCtx;
 
@@ -65,22 +66,12 @@ export class DefaultGraph {
 
         //move to the right a bit
         this.drag.x += - (this.startYear%this.config.resolution) / this.config.resolution * this.config.segmentLength
-        console.log(this.drag.x)
-        //console.log(this.drag.x)
-        //this.move(this.config.segmentLength, 0)
-        //this.timeAxis.move(this.config.segmentLength)
     }
 
 
-
-//#region  build
-
     private build() {
-        let origins = this.members
-            .filter(x => x.fatherId == null && x.motherId == null)
-            .filter(z => this.members.filter(qq => qq.spouseIds?.includes(z.id)).every(s => s.fatherId == null && s.motherId == null))
-
-        this.startYear = origins[0].birthDate.year;
+        let origins = this.familyTree.getOrigins();
+        this.startYear = this.familyTree.getOldestMemberYear();
         this.buildPerson(origins[0]);
         this.buildGrid();
         this.buildTimeAxis();
@@ -96,8 +87,7 @@ export class DefaultGraph {
         this.glyphs.push(personGlyph);
 
         // build for spouse
-        this.members
-            .filter(x => person.spouseIds?.includes(x.id))
+        this.familyTree.getSpouses(person)
             .map(spouse => {
                 this.yOffset += this.config.segmentHeight + this.config.segmentSpacing;
                 this.glyphs.push(new PersonGlyph(this.drag.x + this.getLifespanOffset(spouse), this.yOffset, spouse, this.config))
@@ -111,8 +101,7 @@ export class DefaultGraph {
 
         // build for children
         this.yOffset += 40;
-        this.members
-            .filter(x => x.fatherId == person.id || x.motherId == person.id)
+        this.familyTree.getChildren(person)
             .sort((a, b) => a.birthDate.year < b.birthDate.year ? 1 : -1)
             .map(y => this.buildPerson(y))
     }
@@ -156,8 +145,6 @@ export class DefaultGraph {
         return (person.birthDate.year - this.startYear) / resolution * segmentLength + segmentSpacing * (Math.floor((person.birthDate.year - (Math.floor(this.startYear / resolution) * resolution)) / resolution));
     }
 
-//#endregion
-
     private addDragMove(){
 
         this.ctx.draggable().on('dragmove', (e:any) => {
@@ -165,8 +152,6 @@ export class DefaultGraph {
     
             if (document.body.style.cursor !== "move")
                 document.body.style.cursor = "move";
-
-            console.log(e.detail.box.x)
 
             let dx= e.detail.box.x - this.drag.x;
             let dy= e.detail.box.y - this.drag.y;
@@ -176,7 +161,6 @@ export class DefaultGraph {
             
             this.move(dx,dy)
             this.timeAxis.move(dx)
-            console.log("dragmove")
         }) 
     
         this.ctx.on('dragstart', (e:any) => {
@@ -184,7 +168,6 @@ export class DefaultGraph {
 
             this.ctx.off("mousemove")
             this.drag = {x: e.detail.box.x, y: e.detail.box.y, isDragging: true};
-            console.log("dragstart", this.drag, e)
         })
     
         this.ctx.on('dragend', () => {

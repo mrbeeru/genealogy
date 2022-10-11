@@ -43,7 +43,6 @@ export class TimeAxis
         //update year indicator
         let year = (x-dragX) / (this.segmentLength/this.resolution) + this.startYear - this.startYear%this.resolution
         this.txt.text(`${year}`)
-        console.log(x, dragX)
     }
 
     draw(context: Svg)
