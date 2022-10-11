@@ -29,12 +29,26 @@ export class ProjectComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     let id = this.route.snapshot.paramMap.get('id')
-    
-    let proj = await this.getProjectAsync(id);
-    let members = await this.getMembersAsync(proj);
-    this.project = proj;
-    this.members = members;
-    this.membersChanged.emit(members);
+    if (id != null)
+    {
+      let proj = await this.getProjectAsync(id);
+      let members = await this.getMembersAsync(proj);
+      this.project = proj;
+      this.members = members;
+      this.membersChanged.emit(members);
+    } else 
+    {
+      this.project = {
+        id: "",
+        name: "",
+        memberCount: 0,
+        visibility: "private",
+        createdAt: Date.now()
+      }
+
+      this.members = [];
+    }
+
   }
 
   async getProjectAsync(id: string | null)

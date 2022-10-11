@@ -62,7 +62,6 @@ export class PersonGlyph implements IGlyph {
 
         this.group.add(this.svgSegment);
         //this.group.on("click", (x) => this.svgSegment.stroke({ color: "black", opacity: 0.5, width: 2 }))
-        
     }
 
     private drawText(context: Svg): void {

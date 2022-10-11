@@ -29,7 +29,7 @@ export class DefaultviewComponent implements AfterViewInit {
   //so this component can try to center the graph
   @Input() persons: PersonV2[] = [];
   //leave this here for now
-  @Input() memberAdded!: Observable<PersonV2 | undefined>;
+  @Input() memberAdded!: Observable<PersonV2>;
   @Input() membersChanged!: Observable<PersonV2[]>;
   @Output() selectedPersonChanged: EventEmitter<PersonV2> = new EventEmitter<PersonV2>();
 
@@ -42,16 +42,42 @@ export class DefaultviewComponent implements AfterViewInit {
 
 
   ngAfterViewInit(): void {
-    this.membersChanged.subscribe(x => {
+    this.context = svgjs().addTo(this.grapElement.nativeElement).size(8000, 4000);
+    this.timeAxisContext = svgjs().addTo(this.timeAxisElement.nativeElement).size(8000, 34)
 
+
+    
+    this.membersChanged.subscribe(x => {
         this.persons = x;
 
-        this.context = svgjs().addTo(this.grapElement.nativeElement).size(2000, 3000);
-        this.timeAxisContext = svgjs().addTo(this.timeAxisElement.nativeElement).size(2000, 34)
-
+        //this.context = svgjs().addTo(this.grapElement.nativeElement).size(2000, 3000);
+        //this.timeAxisContext = svgjs().addTo(this.timeAxisElement.nativeElement).size(2000, 34)
+        this.resetContexts();
+        
         this.g1 = new DefaultGraph(this.persons, this.context, this.timeAxisContext);
         this.g1.draw();
       });
+
+      this.memberAdded.subscribe((x: PersonV2) => {
+       //this.persons.push(x)
+
+       this.resetContexts();
+       //this.context = svgjs().addTo(this.grapElement.nativeElement).size(2000, 3000);
+       //this.timeAxisContext = svgjs().addTo(this.timeAxisElement.nativeElement).size(2000, 34)
+       
+       this.g1 = new DefaultGraph(this.persons, this.context, this.timeAxisContext);
+       this.g1.draw();
+      });
+  }
+
+  resetContexts(){
+    this.context.clear();
+    this.timeAxisContext.clear();
+
+    this.context.off("dragmove")
+    this.context.off("dragstart")
+    this.context.off("dragend")
+    this.context.off("mousemove")
   }
 
 }

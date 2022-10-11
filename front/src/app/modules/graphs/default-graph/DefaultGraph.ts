@@ -72,7 +72,10 @@ export class DefaultGraph {
     private build() {
         let origins = this.familyTree.getOrigins();
         this.startYear = this.familyTree.getOldestMemberYear();
-        this.buildPerson(origins[0]);
+        console.log(this.startYear)
+        origins.sort((x,y) => x.birthDate.year - y.birthDate.year).forEach(origin => {
+            this.buildPerson(origin);
+        });
         this.buildGrid();
         this.buildTimeAxis();
         this.buildIndicator();
@@ -146,8 +149,8 @@ export class DefaultGraph {
     }
 
     private addDragMove(){
-
-        this.ctx.draggable().on('dragmove', (e:any) => {
+        this.ctx.draggable(false);
+        this.ctx.draggable(true).on('dragmove', (e:any) => {
           e.preventDefault()
     
             if (document.body.style.cursor !== "move")

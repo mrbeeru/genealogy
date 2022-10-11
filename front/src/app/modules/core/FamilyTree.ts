@@ -18,7 +18,7 @@ export class FamilyTree {
 
     getOldestMemberYear(): number {
         let origins = this.getOrigins();
-        let year = origins[0].birthDate.year;
+        let year = Math.min.apply(null, origins.map(x => x.birthDate.year));
 
         return year;
     }
