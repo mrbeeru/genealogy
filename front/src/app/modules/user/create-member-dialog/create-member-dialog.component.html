@@ -71,6 +71,16 @@
                     <mat-label>Mother Id</mat-label>
                     <input matInput formControlName="motherId">
                 </mat-form-field>
+
+                <mat-form-field>
+                    <mat-label>Spouse Ids</mat-label>
+                    <mat-select formControlName="spouseIds" multiple>
+                      <mat-select-trigger>
+                        {{newMemberForm.get("spouseIds")?.value?.[0] || ''}}
+                      </mat-select-trigger>
+                      <mat-option *ngFor="let member of inputData" [value]="member">{{member.lastName + " " + member.firstName}}</mat-option>
+                    </mat-select>
+                  </mat-form-field>
             </div>
         </div>
     </form>

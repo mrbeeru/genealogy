@@ -40,7 +40,7 @@ export class ProjectComponent implements OnInit {
     {
       this.project = {
         id: "",
-        name: "",
+        name: "my project",
         memberCount: 0,
         visibility: "private",
         createdAt: Date.now()
@@ -75,14 +75,23 @@ export class ProjectComponent implements OnInit {
 
   createMember()
   {
-    const dialogRef = this.dialog.open(CreateMemberDialogComponent);
+    const dialogRef = this.dialog.open(CreateMemberDialogComponent, {data: this.members});
 
-    dialogRef.afterClosed().subscribe((newMember: PersonV2) => {
+    dialogRef.afterClosed().subscribe((newMember: any) => {
 
       if (newMember != null){
         newMember.id = Date.now().toString();
+        newMember.spouseIds = newMember.spouseIds?.map((x:any) => x.id)
+        //set other spouse
+        this.members.filter(x => newMember.spouseIds?.includes(x.id))
+          .map(y => (y.spouseIds = y.spouseIds || []).push(newMember.id))
+
+        //set children
+        this.members.filter(x => x.id == newMember.fatherId || x.id == newMember.motherId)
+          .map(y => (y.childrenIds = y.childrenIds || []).push(newMember.id))
+
         this.members.push(newMember);
-        (this.members[0].childrenIds = this.members[0].childrenIds || []).push(newMember.id)
+        //(this.members[0].childrenIds = this.members[0].childrenIds || []).push(newMember.id)
 
         console.log(this.members)
         this.memberAdded.emit(newMember);

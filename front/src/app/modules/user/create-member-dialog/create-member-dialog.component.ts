@@ -40,7 +40,7 @@ export class CreateMemberDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: any) 
   { 
     this.inputData = data;
-
+    
     if (data?.parent != null)
     {
       this.hookValues(data.parent)
@@ -70,6 +70,7 @@ export class CreateMemberDialogComponent implements OnInit {
   }
 
   onCancelClick(): void {
+    console.log(this.newMemberForm.value)
     this.dialogRef.close();
   }
 

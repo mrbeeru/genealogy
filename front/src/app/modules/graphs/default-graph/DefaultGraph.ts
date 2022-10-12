@@ -12,9 +12,9 @@ export class DefaultGraph {
 
     config = {
         segmentLength: 100,
-        segmentHeight: 14,
-        segmentSpacing: 0,
+        segmentHeight: 30,
         resolution: 10,
+        descendatSpacing: 60,
 
 
         colors:{
@@ -47,7 +47,7 @@ export class DefaultGraph {
     private familyTree: FamilyTree;
 
     private drag = {x: 100, y: 0, isDragging: false}
-
+    private alreadyBuilt: Set<PersonV2> = new Set<PersonV2>();
 
     constructor(members: PersonV2[], ctx: Svg, timeAxisCtx: Svg) {
         this.familyTree = new FamilyTree(members);
@@ -70,10 +70,13 @@ export class DefaultGraph {
 
 
     private build() {
-        let origins = this.familyTree.getOrigins();
         this.startYear = this.familyTree.getOldestMemberYear();
-        console.log(this.startYear)
+        let origins = this.familyTree.getOrigins();
         origins.sort((x,y) => x.birthDate.year - y.birthDate.year).forEach(origin => {
+            // we use the alreadyBuilt set to not build same entities multiple times,
+            // e.g. 2 parents usually have common children => don't build them twice for each parent
+            // there is also the matter of mutiple origins, 2 spouses can be both origins if they don't have ancestors
+            // => don't build graph twice
             this.buildPerson(origin);
         });
         this.buildGrid();
@@ -82,18 +85,22 @@ export class DefaultGraph {
     }
 
     private buildPerson(person: PersonV2) {
-        if (person == null)
+        if (person == null || this.alreadyBuilt.has(person)){
+            this.yOffset += this.config.descendatSpacing;
             return;
+        }
 
         // build for current person
         let personGlyph = new PersonGlyph(this.drag.x + this.getLifespanOffset(person), this.yOffset, person, this.config)
         this.glyphs.push(personGlyph);
+        this.alreadyBuilt.add(person);
 
         // build for spouse
         this.familyTree.getSpouses(person)
             .map(spouse => {
-                this.yOffset += this.config.segmentHeight + this.config.segmentSpacing;
+                this.yOffset += this.config.segmentHeight;
                 this.glyphs.push(new PersonGlyph(this.drag.x + this.getLifespanOffset(spouse), this.yOffset, spouse, this.config))
+                this.alreadyBuilt.add(spouse);
             })
 
         // build relations
@@ -103,7 +110,7 @@ export class DefaultGraph {
             this.glyphs.push(new RelationGlyph(personGlyph, parentsGlyph,  this.config.colors.graphRelations))
 
         // build for children
-        this.yOffset += 40;
+        this.yOffset += this.config.descendatSpacing;
         this.familyTree.getChildren(person)
             .sort((a, b) => a.birthDate.year < b.birthDate.year ? 1 : -1)
             .map(y => this.buildPerson(y))
@@ -143,9 +150,8 @@ export class DefaultGraph {
     private getLifespanOffset(person: PersonV2) {
         let resolution = this.config.resolution;
         let segmentLength = this.config.segmentLength;
-        let segmentSpacing = this.config.segmentSpacing;
 
-        return (person.birthDate.year - this.startYear) / resolution * segmentLength + segmentSpacing * (Math.floor((person.birthDate.year - (Math.floor(this.startYear / resolution) * resolution)) / resolution));
+        return (person.birthDate.year - this.startYear) / resolution * segmentLength;
     }
 
     private addDragMove(){
