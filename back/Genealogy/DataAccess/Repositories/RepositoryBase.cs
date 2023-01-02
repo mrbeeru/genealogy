@@ -16,7 +16,7 @@ namespace Genealogy.DataAccess.Repositories
         {
             this.mongoClient = mongoClient;
             this.clientSessionHandle = clientSessionHandle;
-            this.collectionName = (typeof(T).GetCustomAttributes(typeof(BsonCollectionAttribute), true).FirstOrDefault() as BsonCollectionAttribute).CollectionName;
+            this.collectionName = (typeof(T).GetCustomAttributes(typeof(BsonCollectionAttribute), true).Single() as BsonCollectionAttribute)?.CollectionName ?? throw new Exception("Failed to get collection name.");
 
             if (!mongoClient.GetDatabase(DATABASE).ListCollectionNames().ToList().Contains(collectionName))
                 mongoClient.GetDatabase(DATABASE).CreateCollection(collectionName);
@@ -28,7 +28,7 @@ namespace Genealogy.DataAccess.Repositories
 
         public async Task InsertAsync(T obj) => await Collection.InsertOneAsync(clientSessionHandle, obj);
         public async Task DeleteAsync(string id) => await Collection.DeleteOneAsync(clientSessionHandle, f => f.Id == id);
-        public async Task<T> FindByIdAsync(string id) => (await Collection.FindAsync(clientSessionHandle, f => f.Id == id)).SingleOrDefault() ?? throw new EntityNotFoundException($"Could not find result with id '{id}'");
+        public async Task<T> FindByIdAsync(string id) => (await Collection.FindAsync(clientSessionHandle, f => f.Id == id)).SingleOrDefault();
         public async Task<IEnumerable<T>> FindAllAsync() => (await Collection.FindAsync(clientSessionHandle, _ => true)).ToList();
         public async Task<IEnumerable<T>> FindAsync(FilterDefinition<T> filter) => (await Collection.FindAsync(clientSessionHandle, filter)).ToList();
 

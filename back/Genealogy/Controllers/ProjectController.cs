@@ -7,7 +7,7 @@ using MongoDB.Bson;
 
 namespace Genealogy.Controllers
 {
-    [Route("api/v1/Projects")]
+    [Route("api/v1/projects")]
     [ApiController]
     public class ProjectController : ControllerBase
     {
@@ -20,11 +20,11 @@ namespace Genealogy.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<ProjectEntity>), 200)]
-        public async Task<IActionResult> GetAllProjects()
+        public async Task<IActionResult> GetProjects(bool? isFeatured)
         {
             try
             {
-                return Ok(await projectRepository.FindAllAsync());
+                return Ok(await projectRepository.GetProjects(isFeatured));
             } catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
@@ -37,15 +37,18 @@ namespace Genealogy.Controllers
         {
             try
             {
-                return Ok(await projectRepository.FindByIdAsync(id));
-            } catch (EntityNotFoundException notFound)
-            {
-                return StatusCode(404, notFound.Message);
+                var project = await projectRepository.FindByIdAsync(id);
+
+                if (project == null)
+                    return StatusCode(404, "Project not found.");
+
+                return Ok(project);
             }
-             catch (Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
         }
+
     }
 }

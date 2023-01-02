@@ -13,11 +13,14 @@ import { DefaultviewComponent } from './defaultview/defaultview.component';
 import {MatSliderModule} from '@angular/material/slider';
 import { FormsModule } from '@angular/forms';
 import {DragDropModule} from '@angular/cdk/drag-drop';
+import { HomepageComponent } from './homepage/homepage.component';
+import { MatCardModule } from '@angular/material/card';
 
 @NgModule({
   declarations: [
     MembersComponent,
     DefaultviewComponent,
+    HomepageComponent,
   ],
   imports: [
     CommonModule,
@@ -29,6 +32,7 @@ import {DragDropModule} from '@angular/cdk/drag-drop';
     MatSidenavModule,
     MatButtonModule,
     MatSliderModule,
+    MatCardModule,
     FormsModule,
     DragDropModule
   ],

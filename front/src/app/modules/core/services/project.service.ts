@@ -16,15 +16,19 @@ export class ProjectService{
     }
 
     public async getProjectByIdAsync(id: string) : Promise<ProjectModel | undefined> {
-        return await lastValueFrom(this.http.get<ProjectModel>(`${environment.appUrl}/Projects/${id}`));
+        return await lastValueFrom(this.http.get<ProjectModel>(`${environment.appUrl}/projects/${id}`));
     }
 
     
     public async getProjectMembersAsync(id: string): Promise<PersonV2[]>{
-        return await lastValueFrom(this.http.get<PersonV2[]>(`${environment.appUrl}/Persons?projectId=${id}`));
+        return await lastValueFrom(this.http.get<PersonV2[]>(`${environment.appUrl}/persons?projectId=${id}`));
     }
 
     public async getProjectsAsync() : Promise<ProjectModel[]>{
-        return await lastValueFrom(this.http.get<ProjectModel[]>(`${environment.appUrl}/Projects`));
+        return await lastValueFrom(this.http.get<ProjectModel[]>(`${environment.appUrl}/projects`));
+    }
+
+    public async getFeaturedProjectsAsync() : Promise<ProjectModel[]> {
+        return await lastValueFrom(this.http.get<ProjectModel[]>(`${environment.appUrl}/projects?isFeatured=true`))
     }
 }

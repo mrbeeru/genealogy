@@ -15,7 +15,7 @@ export class DefaultGraph {
         segmentHeight: 30,
         resolution: 10,
         descendatSpacing: 60,
-
+        scaleX: 1,
 
         colors:{
             gridIndicator: "#7777",
@@ -47,6 +47,7 @@ export class DefaultGraph {
     private familyTree: FamilyTree;
 
     private drag = {x: 100, y: 0, isDragging: false}
+    private dragTimeAxis = {x:77, y: 0, isDragging: false}
     private alreadyBuilt: Set<PersonV2> = new Set<PersonV2>();
 
     constructor(members: PersonV2[], ctx: Svg, timeAxisCtx: Svg) {
@@ -58,6 +59,7 @@ export class DefaultGraph {
 
         this.addDragMove();
         this.addMouseMove();
+        this.addTimeAxisResize();
     }
 
     draw() {
@@ -71,6 +73,12 @@ export class DefaultGraph {
 
     private build() {
         this.startYear = this.familyTree.getOldestMemberYear();
+
+        //build grid first so it should be 'under' the lifespans
+        this.buildGrid();
+        this.buildTimeAxis();
+        this.buildIndicator();
+
         let origins = this.familyTree.getOrigins();
         origins.sort((x,y) => x.birthDate.year - y.birthDate.year).forEach(origin => {
             // we use the alreadyBuilt set to not build same entities multiple times,
@@ -79,9 +87,7 @@ export class DefaultGraph {
             // => don't build graph twice
             this.buildPerson(origin);
         });
-        this.buildGrid();
-        this.buildTimeAxis();
-        this.buildIndicator();
+
     }
 
     private buildPerson(person: PersonV2) {
@@ -193,6 +199,42 @@ export class DefaultGraph {
             this.timeAxis.moveIndicator(calc, this.drag.x);
             this.grid.moveIndicator(calc);
         })
+    }
+
+    private addTimeAxisResize(){
+        this.resize(this.timeAxisCtx);
+    }
+
+    resize(context: Svg) {
+
+       this.timeAxisCtx.draggable(false);
+       this.timeAxisCtx.draggable(true).on('dragmove', (e:any) => {
+            e.preventDefault()
+
+            let dx= e.detail.box.x - this.dragTimeAxis.x;
+            this.dragTimeAxis.x += dx;
+
+            var pglyphs = this.glyphs.filter(g => g instanceof PersonGlyph) as PersonGlyph[];
+
+            if (dx > 0)
+                this.config.scaleX *= 1.02
+            else if (dx < 0)
+                this.config.scaleX *= 0.98
+            
+            this.config.scaleX = Math.max(0.2, this.config.scaleX);
+            this.config.scaleX = Math.min(2, this.config.scaleX);
+
+            pglyphs.map(x => x.scaleX(this.config.scaleX))
+
+            var b = this.glyphs.filter(g => g instanceof RelationGlyph) as RelationGlyph[];
+            b.map(x => x.scaleX(this.config.scaleX));
+
+            var c = this.glyphs.filter(g => g instanceof GridGlyph) as GridGlyph[];
+            c.map(x => x.scaleX(this.config.scaleX));
+
+            this.timeAxis.resizeTimeAxis(this.config.scaleX);
+       }) 
+
     }
 
     private move(x: number, y:number)

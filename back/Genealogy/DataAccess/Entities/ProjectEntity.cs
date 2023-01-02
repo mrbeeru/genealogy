@@ -13,7 +13,8 @@ namespace Genealogy.DataAccess.Entities
     [BsonCollection("projects")]
     public class ProjectEntity : EntityBase
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
+        public bool IsFeatured { get; set; }
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public Visibility Visibility { get; set; }

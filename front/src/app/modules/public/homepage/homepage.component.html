@@ -1,0 +1,13 @@
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <div class="mat-display-3 mt-5 text-uppercase w-100 d-flex justify-content-center">Create your genealogy tree</div>
+            <div class="mat-title">Featured</div>
+            <div *ngFor="let project of projects">
+                <mat-card [routerLink]="'/project/' + project.id">
+                    {{project.name}}
+                </mat-card>
+            </div>
+        </div>
+    </div>
+</div>

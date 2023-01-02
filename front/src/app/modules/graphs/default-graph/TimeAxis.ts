@@ -64,4 +64,11 @@ export class TimeAxis
         this.line = context.line(0, 0, 0, 40).stroke({ color: this.colors.gridIndicator, width: 6 })
         this.txt = context.text("0000").font({ fill: this.colors.timeAxisForeground, size: 14, weight: '500' }).move(-16, 0);
     }
+
+    drag!: { x: any; y: any; isDragging: boolean; };
+
+    resizeTimeAxis(resizeX: number)
+    {
+        
+    }
 }

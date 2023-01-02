@@ -37,4 +37,9 @@ export class RelationGlyph implements IGlyph {
     {
         this.shapeGroup.translate(x, y)
     }
+
+    scaleX(scalex: number)
+    {
+        this.shapeGroup.move(this.personGlyph.x * scalex - 3, this.shapeGroup.bbox().y)
+    }
 }
