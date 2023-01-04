@@ -174,6 +174,8 @@ export class DefaultGraph {
             this.drag.x += dx;
             this.drag.y += dy;
             
+            console.log(this.drag.x)
+
             this.move(dx,dy)
             this.timeAxis.move(dx)
         }) 
@@ -195,8 +197,11 @@ export class DefaultGraph {
 
     private addMouseMove(){
         this.ctx.on("mousemove", (x : any) => {
-            let calc = (x.offsetX + this.config.segmentLength/this.config.resolution/2) - (x.offsetX-this.config.segmentLength/this.config.resolution/2 - this.drag.x) % (this.config.segmentLength/this.config.resolution);
-            this.timeAxis.moveIndicator(calc, this.drag.x);
+            let calc = (x.offsetX + this.config.segmentLength / this.config.resolution/2 * this.config.scaleX ) - 
+                        (x.offsetX - this.config.segmentLength / this.config.resolution / 2 * this.config.scaleX - this.drag.x) % 
+                        (this.config.segmentLength/this.config.resolution * this.config.scaleX );
+
+            this.timeAxis.moveIndicator(calc, this.drag.x, this.config.scaleX);
             this.grid.moveIndicator(calc);
         })
     }
@@ -211,18 +216,24 @@ export class DefaultGraph {
        this.timeAxisCtx.draggable(true).on('dragmove', (e:any) => {
             e.preventDefault()
 
-            let dx= e.detail.box.x - this.dragTimeAxis.x;
+            let dx = e.detail.box.x - this.dragTimeAxis.x;
             this.dragTimeAxis.x += dx;
 
             var pglyphs = this.glyphs.filter(g => g instanceof PersonGlyph) as PersonGlyph[];
 
             if (dx > 0)
+            {
+                //this.drag.x += 0.02* this.drag.x;
                 this.config.scaleX *= 1.02
+                this.config.scaleX = Math.min(2, this.config.scaleX);
+            }
             else if (dx < 0)
+            {
+                //this.drag.x -= 0.02* this.drag.x;
                 this.config.scaleX *= 0.98
+                this.config.scaleX = Math.max(0.2, this.config.scaleX);
+            }
             
-            this.config.scaleX = Math.max(0.2, this.config.scaleX);
-            this.config.scaleX = Math.min(2, this.config.scaleX);
 
             pglyphs.map(x => x.scaleX(this.config.scaleX))
 
@@ -232,7 +243,7 @@ export class DefaultGraph {
             var c = this.glyphs.filter(g => g instanceof GridGlyph) as GridGlyph[];
             c.map(x => x.scaleX(this.config.scaleX));
 
-            this.timeAxis.resizeTimeAxis(this.config.scaleX);
+            this.timeAxis.resizeTimeAxis(this.config.scaleX, this.timeAxisCtx);
        }) 
 
     }

@@ -35,13 +35,13 @@ export class TimeAxis
         this.txt.translate(x, 0)
     }
 
-    moveIndicator(x: number, dragX: number)
+    moveIndicator(x: number, dragX: number, scaleX: number)
     {
         this.line.transform({translateX: x})
         this.txt.transform({translateX: x})
 
         //update year indicator
-        let year = (x-dragX) / (this.segmentLength/this.resolution) + this.startYear - this.startYear%this.resolution
+        let year = (x-dragX) / (this.segmentLength/this.resolution * scaleX) + this.startYear - this.startYear%this.resolution
         this.txt.text(`${year}`)
     }
 
@@ -67,8 +67,24 @@ export class TimeAxis
 
     drag!: { x: any; y: any; isDragging: boolean; };
 
-    resizeTimeAxis(resizeX: number)
+    resizeTimeAxis(timelineScaleX: number, context: Svg)
     {
-        
+        this.group = this.group.clear();
+
+        let year = this.startYear - this.startYear % this.resolution;
+        let iterations = (this.endYear - this.startYear) / this.resolution + 1;
+        let diff = (this.startYear % this.resolution) / this.resolution * this.segmentLength;
+        let textWidth = 28;
+
+        for (let i = 0; i < iterations; i++)
+        {
+            let xpos = ((i)* this.segmentLength - diff + this.xOffset) * timelineScaleX  - textWidth / 2 ;
+            let ypos = 16;
+            let txt = context.text(`${year + i * this.resolution}`)
+                .move( xpos , ypos)
+                .font({ fill: this.colors.timeAxisForeground, size: 12, weight: '500' });
+
+            this.group.add(txt);
+        }
     }
 }
