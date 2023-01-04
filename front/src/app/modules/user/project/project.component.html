@@ -15,11 +15,14 @@
     </div>
 
     <div style="flex:1; overflow: hidden;">
-        <div class="d-flex justify-content-between"
-            style="flex-direction: column; min-height: 100vh; height: 100%;">
-            <div style="flex: 1">
-                <app-defaultview [persons]="members" [membersChanged]="membersChanged.asObservable()"
-                    [memberAdded]="memberAdded.asObservable()" (selectedPersonChanged)="selectedMemberChanged($event)">
+        <div class="d-flex justify-content-between w-100 h-100 " style="flex-direction: column;">
+            <div class="d-flex w-100 h-100">
+                <app-defaultview 
+                    class="w-100 h-100"
+                    [persons]="members" 
+                    [membersChanged]="membersChanged.asObservable()"
+                    [memberAdded]="memberAdded.asObservable()" 
+                    (selectedPersonChanged)="selectedMemberChanged($event)">
                 </app-defaultview>
             </div>
 

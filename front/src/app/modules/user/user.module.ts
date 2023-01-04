@@ -20,6 +20,7 @@ import { CreateMemberDialogComponent } from './create-member-dialog/create-membe
 import { ReactiveFormsModule } from '@angular/forms';
 import {MatRadioModule} from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
+import {MatTooltipModule} from '@angular/material/tooltip';
 
 
 @NgModule({
@@ -45,6 +46,7 @@ import { MatSelectModule } from '@angular/material/select';
     ReactiveFormsModule,
     MatRadioModule,
     MatSelectModule,
+    MatTooltipModule,
   ],
   exports: [
   ]

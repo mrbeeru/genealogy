@@ -82,7 +82,8 @@ export class PersonGlyph implements IGlyph {
         this.svgSegment = context.rect(length, this.segmentHeight)
             .move(this.x, this.y)
             .fill(fillColor)
-            .stroke({ color: fillColor, opacity: 1, width: 1 });
+            .stroke({ color: fillColor, opacity: 1, width: 1 })
+            .attr({'matTooltip': 'test'});
 
         this.group.add(this.svgSegment);
     }
@@ -164,5 +165,4 @@ export class PersonGlyph implements IGlyph {
 
         return [xpos, ypos];
     }
-
 }
