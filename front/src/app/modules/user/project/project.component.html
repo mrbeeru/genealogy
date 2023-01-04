@@ -1,4 +1,4 @@
-<div style="display: flex; flex-direction: column; min-height: 100vh; height: 100%;">
+<div style="display: flex; flex-direction: column; height: 100%;">
 
     <div class="d-flex justify-content-between w-100 align-items-center pr-4 pl-4 pt-3 pb-2"
         style="border-bottom: 1px solid #DDD;">
@@ -14,11 +14,9 @@
         </div>
     </div>
 
-    <div style="flex:1; overflow: hidden;">
-        <div class="d-flex justify-content-between w-100 h-100 " style="flex-direction: column;">
-            <div class="d-flex w-100 h-100">
+        <div class="flex:1; d-flex" style="flex-direction: row; ">
+            <div style="overflow: hidden;">
                 <app-defaultview 
-                    class="w-100 h-100"
                     [persons]="members" 
                     [membersChanged]="membersChanged.asObservable()"
                     [memberAdded]="memberAdded.asObservable()" 
@@ -26,15 +24,8 @@
                 </app-defaultview>
             </div>
 
-            <!-- <div class="col-md-6 col-xl-3" *ngFor="let member of members">
-                <div class="mat-elevation-z2 m-2 p-3" style="background-color: white; border-radius: 8px;">
-                    <div style="color: #3c4043;font-size: .875rem; font-weight: 500;">
-                        {{member.firstName}}
-                    </div>
-                </div>
-            </div> -->
-            <div
-                style="width: 300px; background-color: white; z-index: 10; right:0; position: fixed; height:100%; border-left: 1px solid #DDD;">
+            <div class="h-100"
+                style="min-width: 300px; background-color: white; border-left: 1px solid #DDD;">
                 <span *ngIf="!selectedMember">Select a person on the graph</span>
                 <div *ngIf="selectedMember">
                     {{selectedMember.firstName}} {{selectedMember.lastName}}
@@ -43,7 +34,6 @@
                     </div>
                 </div>
             </div>
+            
         </div>
     </div>
-
-</div>
