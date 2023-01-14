@@ -1,5 +1,5 @@
 
-import { Svg } from '@svgdotjs/svg.js';
+import { G, Svg } from '@svgdotjs/svg.js';
 import { PersonV2 } from 'src/app/modules/core/models/person.model';
 import { FamilyTree } from '../../core/FamilyTree';
 import { GridGlyph } from './glyphs/GridGlyph';
@@ -36,7 +36,6 @@ export class DefaultGraph {
 
     private startYear = 0;
     private endYear = 2022;
-    //private xOffset = 100 ;
     private yOffset = 10;
     private glyphs: IGlyph[] = [];
 
@@ -46,32 +45,31 @@ export class DefaultGraph {
     private timeAxis!: TimeAxis;
     private grid!: GridGlyph;
     private familyTree: FamilyTree;
+    private grp!: G;
 
-    private drag = {x: 100, y: 0, isDragging: false}
-    private dragTimeAxis = {x:0, y: 0, isDragging: false}
+    private drag = {x: 10, y: 0, isDragging: false}
     private alreadyBuilt: Set<PersonV2> = new Set<PersonV2>();
 
     constructor(members: PersonV2[], ctx: Svg, timeAxisCtx: Svg) {
         this.familyTree = new FamilyTree(members);
         this.ctx = ctx;
+        this.grp = ctx.group();
         this.timeAxisCtx = timeAxisCtx;
 
         this.build();
 
-        this.addDragMove();
-        this.addMouseMove();
-        this.addTimeAxisResize();
+        this.addPan();
         this.addZoom();
+        this.addMouseMove();
     }
 
     draw() {
-        this.glyphs.forEach(x => x.draw(this.ctx));
+        this.glyphs.forEach(x => x.draw(this.grp));
         this.timeAxis.draw(this.timeAxisCtx);
 
         //move to the right a bit
         this.drag.x += - (this.startYear%this.config.resolution) / this.config.resolution * this.config.segmentLength
     }
-
 
     private build() {
         this.startYear = this.familyTree.getOldestMemberYear();
@@ -150,10 +148,6 @@ export class DefaultGraph {
         this.timeAxis = new TimeAxis(cfg, colors)
     }
 
-    private addZoom(){
-
-    }
-
     private getLifespanOffset(person: PersonV2) {
         let resolution = this.config.resolution;
         let segmentLength = this.config.segmentLength;
@@ -161,101 +155,54 @@ export class DefaultGraph {
         return (person.birthDate.year - this.startYear) / resolution * segmentLength;
     }
 
-    private addDragMove(){
-        this.ctx.draggable(false);
-        this.ctx.draggable(true).on('dragmove', (e:any) => {
-          e.preventDefault()
-    
-            if (document.body.style.cursor !== "move")
-                document.body.style.cursor = "move";
-
-            let dx= e.detail.box.x - this.drag.x;
-            let dy= e.detail.box.y - this.drag.y;
-            
-            this.drag.x += dx;
-            this.drag.y += dy;
-            
-            this.move(dx,dy)
-            this.timeAxis.move(dx)
-        }) 
-    
-        this.ctx.on('dragstart', (e:any) => {
+    private addPan(){
+        this.ctx.draggable(true);
+        this.ctx.on('dragmove', (e:any) => {
             e.preventDefault()
 
-            this.ctx.off("mousemove")
-            this.drag = {x: e.detail.box.x, y: e.detail.box.y, isDragging: true};
-        })
-    
-        this.ctx.on('dragend', () => {
-            document.body.style.cursor = "default";
-            
-            this.drag.isDragging = false;
-            this.addMouseMove();
+            let transformMatrix = this.grp.transform();
+            transformMatrix.e = e.detail.box.x;
+            transformMatrix.f = e.detail.box.y;
+
+            this.grp.transform(transformMatrix);
+            this.timeAxis.move(transformMatrix.translateX ?? 0)
+        }) 
+    }
+
+    private addZoom(){
+        this.ctx.on('wheel', (e: any) => {
+
+            let transform = this.grp.transform();
+
+            let a = (e.offsetX - (transform.e ?? 0)) / this.config.zoom;
+            let b = (e.offsetY - (transform.f ?? 0)) / this.config.zoom
+
+            if (e.deltaY > 0)
+            {
+                this.config.zoom *= 0.9
+                this.grp.scale(0.9, 0.9, a,b);
+            }
+            else
+            {
+                this.config.zoom *= 1.1
+                this.grp.scale(1.1, 1.1, a,b);
+            }
+
+            transform = this.grp.transform();
+            this.timeAxis.resizeTimeAxis(this.config.zoom, this.grp.transform().translateX ?? 0);
         })
     }
 
     private addMouseMove(){
         this.ctx.on("mousemove", (x : any) => {
-            let calc = (x.offsetX + this.config.segmentLength / this.config.resolution/2 * this.config.scaleX ) - 
-                        (x.offsetX - this.config.segmentLength / this.config.resolution / 2 * this.config.scaleX - this.drag.x) % 
-                        (this.config.segmentLength/this.config.resolution * this.config.scaleX );
+            let dx = this.grp.transform().translateX ?? 0;
 
-            this.timeAxis.moveIndicator(calc, this.drag.x, this.config.scaleX);
-            this.grid.moveIndicator(calc);
+            let calc = (x.offsetX + this.config.segmentLength / this.config.resolution/2 * this.config.zoom ) - 
+                        (x.offsetX - this.config.segmentLength / this.config.resolution / 2 * this.config.zoom - dx) % 
+                        (this.config.segmentLength/this.config.resolution * this.config.zoom );
+
+            this.timeAxis.moveIndicator(calc, dx, this.config.zoom);
+            this.grid.moveIndicator(calc, dx, this.config.zoom);
         })
-    }
-
-    private addTimeAxisResize(){
-        this.resize(this.timeAxisCtx);
-    }
-
-    private resize(context: Svg) {
-
-       this.timeAxisCtx.draggable(false);
-       this.timeAxisCtx.draggable(true).on('dragmove', (e:any) => {
-            e.preventDefault()
-            this.resizeTimeAxis(e.detail.box.x);
-       }) 
-
-    }
-
-    private resizeTimeAxis(x: number){
-        
-        let dx = x - this.dragTimeAxis.x;
-        this.dragTimeAxis.x += dx;
-
-        var pglyphs = this.glyphs.filter(g => g instanceof PersonGlyph) as PersonGlyph[];
-
-        if (dx > 0)
-        {
-            //this.drag.x += 0.02* this.drag.x;
-            this.config.scaleX *= 1.02
-            this.config.scaleX = Math.min(2, this.config.scaleX);
-        }
-        else if (dx < 0)
-        {
-            //this.drag.x -= 0.02* this.drag.x;
-            this.config.scaleX *= 0.98
-            this.config.scaleX = Math.max(0.2, this.config.scaleX);
-        }
-        
-
-        pglyphs.map(x => x.scaleX(this.config.scaleX))
-
-        var b = this.glyphs.filter(g => g instanceof RelationGlyph) as RelationGlyph[];
-        b.map(x => x.scaleX(this.config.scaleX));
-
-        var c = this.glyphs.filter(g => g instanceof GridGlyph) as GridGlyph[];
-        c.map(x => x.scaleX(this.config.scaleX));
-
-        this.timeAxis.resizeTimeAxis(this.config.scaleX, this.timeAxisCtx);
-    }
-
-    private move(x: number, y:number)
-    {
-        for (let glyph of this.glyphs)
-        {
-            glyph.dragMove(x,y)
-        }
     }
 }

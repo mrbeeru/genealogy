@@ -38,12 +38,12 @@ export class PersonGlyph implements IGlyph {
         this.resolution = config.resolution;
     }
 
-    draw(context: Svg): void {
+    draw(context: G): void {
         this.group = context.group();
 
-        this.drawLifeSegments(context);
-        this.drawText(context);
-        this.drawImage(context);
+        this.drawLifeSegments(this.group);
+        this.drawText(this.group);
+        this.drawImage(this.group);
 
         this.group.on("mouseover", (x) => {
             this.highlight();
@@ -75,7 +75,7 @@ export class PersonGlyph implements IGlyph {
     }
 
 
-    private drawLifeSegments(context: Svg): void {
+    private drawLifeSegments(context: G): void {
         const fillColor = this.person.gender == "f" ? this.segmentColorFemale : this.segmentColorMale;
         let length = this.getLifespanLengthInPixels();
 
@@ -88,7 +88,7 @@ export class PersonGlyph implements IGlyph {
         this.group.add(this.svgSegment);
     }
 
-    private drawText(context: Svg): void {
+    private drawText(context: G): void {
         let name = `${this.person.lastName} ${this.person.firstName}`;
 
         if (this.person.firstName == null || this.person.firstName === "")
@@ -103,7 +103,7 @@ export class PersonGlyph implements IGlyph {
         this.group.add(this.svgText);
     }
 
-    private drawImage(context: Svg): void {
+    private drawImage(context: G): void {
         let [xpos, ypos] = this.getIconPosition();
 
         //this.svgImage = context.image("https://icons.veryicon.com/png/o/internet--web/prejudice/user-128.png")

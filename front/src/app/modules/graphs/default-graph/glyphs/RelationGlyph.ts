@@ -17,7 +17,7 @@ export class RelationGlyph implements IGlyph {
         this.color = color;
     }
 
-    draw(context: Svg): void 
+    draw(context: G): void 
     {
         let yMin = Math.min(...this.parentsGlyph.map(x => x.y)) + 6;
 
