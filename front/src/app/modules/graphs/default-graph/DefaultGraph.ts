@@ -36,7 +36,6 @@ export class DefaultGraph {
 
     private startYear = 0;
     private endYear = 2022;
-    //private xOffset = 100 ;
     private yOffset = 10;
     private glyphs: IGlyph[] = [];
 
@@ -49,7 +48,6 @@ export class DefaultGraph {
     private grp!: G;
 
     private drag = {x: 10, y: 0, isDragging: false}
-    private dragTimeAxis = {x:0, y: 0, isDragging: false}
     private alreadyBuilt: Set<PersonV2> = new Set<PersonV2>();
 
     constructor(members: PersonV2[], ctx: Svg, timeAxisCtx: Svg) {
@@ -72,7 +70,6 @@ export class DefaultGraph {
         //move to the right a bit
         this.drag.x += - (this.startYear%this.config.resolution) / this.config.resolution * this.config.segmentLength
     }
-
 
     private build() {
         this.startYear = this.familyTree.getOldestMemberYear();
@@ -207,59 +204,5 @@ export class DefaultGraph {
             this.timeAxis.moveIndicator(calc, dx, this.config.zoom);
             this.grid.moveIndicator(calc, dx, this.config.zoom);
         })
-    }
-
-    private addTimeAxisResize(){
-        this.resize(this.timeAxisCtx);
-    }
-
-    private resize(context: Svg) {
-
-       this.timeAxisCtx.draggable(false);
-       this.timeAxisCtx.draggable(true).on('dragmove', (e:any) => {
-            e.preventDefault()
-            this.resizeTimeAxis(e.detail.box.x);
-       }) 
-
-    }
-
-    private resizeTimeAxis(x: number){
-        
-        let dx = x - this.dragTimeAxis.x;
-        this.dragTimeAxis.x += dx;
-
-        var pglyphs = this.glyphs.filter(g => g instanceof PersonGlyph) as PersonGlyph[];
-
-        if (dx > 0)
-        {
-            //this.drag.x += 0.02* this.drag.x;
-            this.config.scaleX *= 1.02
-            this.config.scaleX = Math.min(2, this.config.scaleX);
-        }
-        else if (dx < 0)
-        {
-            //this.drag.x -= 0.02* this.drag.x;
-            this.config.scaleX *= 0.98
-            this.config.scaleX = Math.max(0.2, this.config.scaleX);
-        }
-        
-
-        pglyphs.map(x => x.scaleX(this.config.scaleX))
-
-        var b = this.glyphs.filter(g => g instanceof RelationGlyph) as RelationGlyph[];
-        b.map(x => x.scaleX(this.config.scaleX));
-
-        var c = this.glyphs.filter(g => g instanceof GridGlyph) as GridGlyph[];
-        c.map(x => x.scaleX(this.config.scaleX));
-
-        this.timeAxis.resizeTimeAxis(this.config.scaleX, 0);
-    }
-
-    private move(x: number, y:number)
-    {
-        for (let glyph of this.glyphs)
-        {
-            glyph.dragMove(x,y)
-        }
     }
 }
