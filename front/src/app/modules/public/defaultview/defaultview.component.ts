@@ -42,8 +42,9 @@ export class DefaultviewComponent implements AfterViewInit {
 
 
   ngAfterViewInit(): void {
-    this.context = svgjs().addTo(this.grapElement.nativeElement).size(8000, 4000);
-    this.timeAxisContext = svgjs().addTo(this.timeAxisElement.nativeElement).size(8000, 34)
+    this.context = svgjs().addTo(this.grapElement.nativeElement).size(10000, 10000);
+    this.context.css({"border" : "1px solid black"})
+    this.timeAxisContext = svgjs().addTo(this.timeAxisElement.nativeElement).size(10000, 34)
     console.log(window.innerHeight, window.outerHeight, window.innerWidth, window.outerWidth)
 
 

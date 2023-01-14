@@ -1,4 +1,5 @@
 import { Line } from "@svgdotjs/svg.js";
+import { G } from "@svgdotjs/svg.js";
 import { Svg } from "@svgdotjs/svg.js";
 import { IGlyph } from "./IGlyph";
 
@@ -21,7 +22,7 @@ export class GridLineGlyph implements IGlyph
         this.colors = colors
     }
 
-    draw(context: Svg): void {
+    draw(context: G): void {
 
         this.svgLine = context.line(this.x , 0, this.x, this.height)
                           .stroke({ color: this.colors.gridLines, width: this.gridLineWidth })

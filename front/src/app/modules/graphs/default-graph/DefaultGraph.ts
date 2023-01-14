@@ -1,5 +1,5 @@
 
-import { Svg } from '@svgdotjs/svg.js';
+import { G, Svg } from '@svgdotjs/svg.js';
 import { PersonV2 } from 'src/app/modules/core/models/person.model';
 import { FamilyTree } from '../../core/FamilyTree';
 import { GridGlyph } from './glyphs/GridGlyph';
@@ -46,26 +46,29 @@ export class DefaultGraph {
     private timeAxis!: TimeAxis;
     private grid!: GridGlyph;
     private familyTree: FamilyTree;
+    private grp!: G;
 
-    private drag = {x: 100, y: 0, isDragging: false}
+    private drag = {x: 10, y: 0, isDragging: false}
     private dragTimeAxis = {x:0, y: 0, isDragging: false}
     private alreadyBuilt: Set<PersonV2> = new Set<PersonV2>();
 
     constructor(members: PersonV2[], ctx: Svg, timeAxisCtx: Svg) {
         this.familyTree = new FamilyTree(members);
         this.ctx = ctx;
+        this.grp = ctx.group();
         this.timeAxisCtx = timeAxisCtx;
+
 
         this.build();
 
-        this.addDragMove();
-        this.addMouseMove();
-        this.addTimeAxisResize();
+        this.addPan();
         this.addZoom();
+        //this.addMouseMove();
+        //this.addTimeAxisResize();
     }
 
     draw() {
-        this.glyphs.forEach(x => x.draw(this.ctx));
+        this.glyphs.forEach(x => x.draw(this.grp));
         this.timeAxis.draw(this.timeAxisCtx);
 
         //move to the right a bit
@@ -150,10 +153,6 @@ export class DefaultGraph {
         this.timeAxis = new TimeAxis(cfg, colors)
     }
 
-    private addZoom(){
-
-    }
-
     private getLifespanOffset(person: PersonV2) {
         let resolution = this.config.resolution;
         let segmentLength = this.config.segmentLength;
@@ -161,36 +160,37 @@ export class DefaultGraph {
         return (person.birthDate.year - this.startYear) / resolution * segmentLength;
     }
 
-    private addDragMove(){
-        this.ctx.draggable(false);
-        this.ctx.draggable(true).on('dragmove', (e:any) => {
-          e.preventDefault()
-    
-            if (document.body.style.cursor !== "move")
-                document.body.style.cursor = "move";
-
-            let dx= e.detail.box.x - this.drag.x;
-            let dy= e.detail.box.y - this.drag.y;
-            
-            this.drag.x += dx;
-            this.drag.y += dy;
-            
-            this.move(dx,dy)
-            this.timeAxis.move(dx)
-        }) 
-    
-        this.ctx.on('dragstart', (e:any) => {
+    private addPan(){
+        this.ctx.draggable(true);
+        this.ctx.on('dragmove', (e:any) => {
             e.preventDefault()
 
-            this.ctx.off("mousemove")
-            this.drag = {x: e.detail.box.x, y: e.detail.box.y, isDragging: true};
-        })
-    
-        this.ctx.on('dragend', () => {
-            document.body.style.cursor = "default";
-            
-            this.drag.isDragging = false;
-            this.addMouseMove();
+            let transformMatrix = this.grp.transform();
+            transformMatrix.e = e.detail.box.x;
+            transformMatrix.f = e.detail.box.y;
+
+            this.grp.transform(transformMatrix);
+        }) 
+    }
+
+    private addZoom(){
+        this.ctx.on('wheel', (e: any) => {
+
+            let transform = this.grp.transform();
+
+            let a = (e.offsetX - (transform.e ?? 0)) / this.config.zoom;
+            let b = (e.offsetY - (transform.f ?? 0)) / this.config.zoom
+
+            if (e.deltaY > 0)
+            {
+                this.config.zoom *= 0.9
+                this.grp.scale(0.9, 0.9, a,b);
+            }
+            else
+            {
+                this.config.zoom *= 1.1
+                this.grp.scale(1.1, 1.1, a,b);
+            }
         })
     }
 

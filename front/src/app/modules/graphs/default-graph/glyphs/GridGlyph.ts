@@ -1,4 +1,5 @@
 import { Line } from "@svgdotjs/svg.js";
+import { G } from "@svgdotjs/svg.js";
 import { Svg } from "@svgdotjs/svg.js";
 import { GridLineGlyph } from "./GridLineGlyph";
 import { IGlyph } from "./IGlyph";
@@ -29,7 +30,7 @@ export class GridGlyph implements IGlyph
         this.colors = colors;
     }
 
-    draw(context: Svg): void {
+    draw(context: G): void {
         let height = 2000;
         let endYear = this.presentYear;
         let numIterations = (endYear - this.startYear) / this.resolution
