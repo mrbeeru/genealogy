@@ -170,6 +170,7 @@ export class DefaultGraph {
             transformMatrix.f = e.detail.box.y;
 
             this.grp.transform(transformMatrix);
+            this.timeAxis.move(transformMatrix.translateX ?? 0)
         }) 
     }
 
@@ -191,6 +192,9 @@ export class DefaultGraph {
                 this.config.zoom *= 1.1
                 this.grp.scale(1.1, 1.1, a,b);
             }
+
+            transform = this.grp.transform();
+            this.timeAxis.resizeTimeAxis(this.config.zoom, this.grp.transform().translateX ?? 0);
         })
     }
 
@@ -248,7 +252,7 @@ export class DefaultGraph {
         var c = this.glyphs.filter(g => g instanceof GridGlyph) as GridGlyph[];
         c.map(x => x.scaleX(this.config.scaleX));
 
-        this.timeAxis.resizeTimeAxis(this.config.scaleX, this.timeAxisCtx);
+        this.timeAxis.resizeTimeAxis(this.config.scaleX, 0);
     }
 
     private move(x: number, y:number)
