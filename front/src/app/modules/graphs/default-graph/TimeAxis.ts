@@ -33,14 +33,6 @@ export class TimeAxis
         var t = this.group.transform();
         t.e = x;
         this.group.transform(t);
-
-        t = this.line.transform();
-        t.e = x;
-        this.line.transform(t);
-
-        t = this.txt.transform();
-        t.e = x;
-        this.txt.transform(t)
     }
 
     moveIndicator(x: number, dragX: number, scaleX: number)

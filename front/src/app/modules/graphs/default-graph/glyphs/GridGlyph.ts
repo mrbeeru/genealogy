@@ -56,8 +56,8 @@ export class GridGlyph implements IGlyph
         this.xOffset += x;
     }
 
-    moveIndicator(x: number){
-        this.indicatorLine.transform({translateX: x})
+    moveIndicator(x: number, dx: number, scale: number){
+        this.indicatorLine.transform({translateX: (x - dx) / scale})
     }
 
     scaleX(scalex: number)

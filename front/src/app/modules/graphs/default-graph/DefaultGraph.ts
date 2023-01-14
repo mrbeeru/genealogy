@@ -58,13 +58,11 @@ export class DefaultGraph {
         this.grp = ctx.group();
         this.timeAxisCtx = timeAxisCtx;
 
-
         this.build();
 
         this.addPan();
         this.addZoom();
-        //this.addMouseMove();
-        //this.addTimeAxisResize();
+        this.addMouseMove();
     }
 
     draw() {
@@ -200,12 +198,14 @@ export class DefaultGraph {
 
     private addMouseMove(){
         this.ctx.on("mousemove", (x : any) => {
-            let calc = (x.offsetX + this.config.segmentLength / this.config.resolution/2 * this.config.scaleX ) - 
-                        (x.offsetX - this.config.segmentLength / this.config.resolution / 2 * this.config.scaleX - this.drag.x) % 
-                        (this.config.segmentLength/this.config.resolution * this.config.scaleX );
+            let dx = this.grp.transform().translateX ?? 0;
 
-            this.timeAxis.moveIndicator(calc, this.drag.x, this.config.scaleX);
-            this.grid.moveIndicator(calc);
+            let calc = (x.offsetX + this.config.segmentLength / this.config.resolution/2 * this.config.zoom ) - 
+                        (x.offsetX - this.config.segmentLength / this.config.resolution / 2 * this.config.zoom - dx) % 
+                        (this.config.segmentLength/this.config.resolution * this.config.zoom );
+
+            this.timeAxis.moveIndicator(calc, dx, this.config.zoom);
+            this.grid.moveIndicator(calc, dx, this.config.zoom);
         })
     }
 
