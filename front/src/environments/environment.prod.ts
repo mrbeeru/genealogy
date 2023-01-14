@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  appUrl: 'http://localhost:5046/api/v1'
+  appUrl: 'https://mrbeeru.vps.webdock.cloud:10010/api/v1'
 };

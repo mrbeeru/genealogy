@@ -61,6 +61,7 @@ export class DefaultGraph {
         this.addDragMove();
         this.addMouseMove();
         this.addTimeAxisResize();
+        this.addZoom();
     }
 
     draw() {
@@ -78,7 +79,6 @@ export class DefaultGraph {
         //build grid first so it should be 'under' the lifespans
         this.buildGrid();
         this.buildTimeAxis();
-        this.buildIndicator();
 
         let origins = this.familyTree.getOrigins();
         origins.sort((x,y) => x.birthDate.year - y.birthDate.year).forEach(origin => {
@@ -150,7 +150,7 @@ export class DefaultGraph {
         this.timeAxis = new TimeAxis(cfg, colors)
     }
 
-    private buildIndicator(){
+    private addZoom(){
 
     }
 
@@ -209,7 +209,7 @@ export class DefaultGraph {
         this.resize(this.timeAxisCtx);
     }
 
-    resize(context: Svg) {
+    private resize(context: Svg) {
 
        this.timeAxisCtx.draggable(false);
        this.timeAxisCtx.draggable(true).on('dragmove', (e:any) => {
