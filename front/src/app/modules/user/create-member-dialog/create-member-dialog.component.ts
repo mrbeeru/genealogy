@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { PersonV2 } from '../../core/models/person.model';
 
@@ -10,27 +10,27 @@ import { PersonV2 } from '../../core/models/person.model';
 })
 export class CreateMemberDialogComponent implements OnInit {
 
-  newMemberForm = new FormGroup({
-    firstName: new FormControl('', Validators.required),
-    lastName: new FormControl('', Validators.required),
-    gender: new FormControl('', Validators.required),
+  newMemberForm = new UntypedFormGroup({
+    firstName: new UntypedFormControl('', Validators.required),
+    lastName: new UntypedFormControl('', Validators.required),
+    gender: new UntypedFormControl('', Validators.required),
 
-    birthDate: new FormGroup({
-      year: new FormControl(null, [Validators.required, Validators.min(1)]),
-      month: new FormControl(null, [Validators.min(1), Validators.max(12)]),
-      day: new FormControl(null, [Validators.min(1), Validators.max(31)]),
+    birthDate: new UntypedFormGroup({
+      year: new UntypedFormControl(null, [Validators.required, Validators.min(1)]),
+      month: new UntypedFormControl(null, [Validators.min(1), Validators.max(12)]),
+      day: new UntypedFormControl(null, [Validators.min(1), Validators.max(31)]),
     }),
 
-    deathDate: new FormGroup({
-      year: new FormControl(null, [Validators.min(1)]),
-      month: new FormControl(null, [Validators.min(1), Validators.max(12)]),
-      day: new FormControl(null, [Validators.min(1), Validators.max(31)]),
+    deathDate: new UntypedFormGroup({
+      year: new UntypedFormControl(null, [Validators.min(1)]),
+      month: new UntypedFormControl(null, [Validators.min(1), Validators.max(12)]),
+      day: new UntypedFormControl(null, [Validators.min(1), Validators.max(31)]),
     }),
 
-    motherId: new FormControl(null),
-    fatherId: new FormControl(null),
-    spouseIds: new FormControl(null),
-    childrenIds: new FormControl(null)
+    motherId: new UntypedFormControl(null),
+    fatherId: new UntypedFormControl(null),
+    spouseIds: new UntypedFormControl(null),
+    childrenIds: new UntypedFormControl(null)
   })
 
   inputData: any = undefined;
