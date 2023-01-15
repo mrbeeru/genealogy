@@ -46,15 +46,6 @@ export class GridGlyph implements IGlyph
         this.indicatorLine.attr({"stroke-dasharray": 5})
     }
 
-    dragMove(x: number, y: number)
-    {
-        for (let line of this.lineGlyphs)
-            line.dragMove(x, 0)
-
-        this.indicatorLine.translate(x, 0)
-        //this.xOffset += x;
-    }
-
     moveIndicator(x: number, dx: number, scale: number){
         var xpos = (x - dx) / scale;
         let maxXpos = Math.ceil((this.presentYear - this.startYear) / this.resolution) * this.segmentLength;
@@ -63,16 +54,4 @@ export class GridGlyph implements IGlyph
         
         this.indicatorLine.transform({translateX: xpos})
     }
-
-    scaleX(scalex: number)
-    {
-        this.lineGlyphs.map(x => x.scaleX(scalex));
-
-        //let diff = (this.startYear % this.resolution) / this.resolution * this.segmentLength
-        //this.gridLines.map(x => x.transform({translateX:  (x.bbox().x - 90) * scalex - x.bbox().x - diff} ));
-        //this.gridLines.map(x => x.move(x.bbox().x - this.xOffset + 100, x.bbox().y));
-
-        //this.gridLines.map(x => x.move( (x.bbox().x - 90) +  (x.bbox().x - 90) * (1 - scalex), x.bbox().y));
-    }
-    
 }

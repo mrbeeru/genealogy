@@ -1,5 +1,4 @@
 import { G } from "@svgdotjs/svg.js";
-import { Shape, Svg } from "@svgdotjs/svg.js";
 import { IGlyph } from "./IGlyph";
 import { PersonGlyph } from "./PersonGlyph";
 
@@ -31,15 +30,5 @@ export class RelationGlyph implements IGlyph {
 
         let shape = context.line(this.personGlyph.x, this.personGlyph.y, this.personGlyph.x, yMin).stroke({ color: this.color, width: 1, linecap: 'round' });
         this.shapeGroup.add(shape);
-    }
-
-    dragMove(x: number, y: number)
-    {
-        this.shapeGroup.translate(x, y)
-    }
-
-    scaleX(scalex: number)
-    {
-        this.shapeGroup.move(this.personGlyph.x * scalex - 3, this.shapeGroup.bbox().y)
     }
 }

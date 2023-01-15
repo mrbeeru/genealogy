@@ -13,9 +13,9 @@ export class DefaultGraph {
 
     config = {
         segmentLength: 100,
-        segmentHeight: 30,
+        segmentHeight: 26,
         resolution: 10,
-        descendatSpacing: 60,
+        descendatSpacing: 50,
         scaleX: 1,
         zoom: 1,
 
@@ -48,7 +48,6 @@ export class DefaultGraph {
     private familyTree: FamilyTree;
     private graphGroup!: G;
     private gridGroup!: G;
-    private indicatorLine!: Line;
 
     private drag = {x: 10, y: 0, isDragging: false}
     private alreadyBuilt: Set<PersonV2> = new Set<PersonV2>();
@@ -56,8 +55,8 @@ export class DefaultGraph {
     constructor(members: PersonV2[], ctx: Svg, timeAxisCtx: Svg) {
         this.familyTree = new FamilyTree(members);
         this.ctx = ctx;
-        this.graphGroup = ctx.group();
         this.gridGroup = ctx.group();
+        this.graphGroup = ctx.group();
         this.timeAxisCtx = timeAxisCtx;
 
         this.build();
@@ -68,9 +67,9 @@ export class DefaultGraph {
     }
 
     draw() {
-        this.glyphs.forEach(x => x.draw(this.graphGroup));
-        this.timeAxis.draw(this.timeAxisCtx);
         this.grid.draw(this.gridGroup)
+        this.timeAxis.draw(this.timeAxisCtx);
+        this.glyphs.forEach(x => x.draw(this.graphGroup));
 
         this.translateGraph(0, 0)
         
@@ -162,7 +161,6 @@ export class DefaultGraph {
     private addPan(){
         //this.ctx.draggable(true);
         this.ctx.draggable().on('dragmove', (e:any) => {
-
             let [x, y] = [e.detail.box.x, e.detail.box.y];
 
             console.log(x)
@@ -200,8 +198,6 @@ export class DefaultGraph {
 
     private addZoom(){
         this.ctx.on('wheel', (e: any) => {
-            //e.preventDefault();
-
             let transform = this.graphGroup.transform();
 
             let a = (e.offsetX - (transform.e ?? 0)) / this.config.zoom;

@@ -24,17 +24,7 @@ export class GridLineGlyph implements IGlyph
 
     draw(context: G): void {
 
-        this.svgLine = context.line(this.x , 0, this.x, this.height)
+        this.svgLine  = context.line(this.x , 0, this.x, this.height)
                           .stroke({ color: this.colors.gridLines, width: this.gridLineWidth })
     }
-
-    dragMove(x: number, y: number): void {
-        this.svgLine.translate(x, 0)
-    }
-
-    scaleX(scalex: number)
-    {
-        this.svgLine.move(this.x *  scalex, 0);
-    }
-
 }

@@ -11,7 +11,7 @@ export class PersonGlyph implements IGlyph {
 
     private resolution: number;
     private textColor: string = "#000D";
-    private textSize: number = 11;
+    private textSize: number = 13;
     private textWeight: string = "500";
 
     private svgImagePadding = 4;
@@ -53,27 +53,6 @@ export class PersonGlyph implements IGlyph {
             this.clearHighlight();
         })
     }
-
-    dragMove(x: number, y: number) {
-        this.svgSegment.translate(x, y);
-        this.svgText.translate(x, y);
-        this.svgImage.translate(x, y)
-    }
-
-    scaleX(scalex: number)
-    {
-        this.segmentScaleX = scalex;
-
-        var newLength = this.getLifespanLengthInPixels() * this.segmentScaleX ;
-        this.svgSegment.size(newLength, this.segmentHeight).move(this.x  * this.segmentScaleX , this.y);
-
-        let [xPosText, yPosText] = this.getTextPosition();
-        this.svgText.move(xPosText, yPosText);
-
-        let [xPosIcon, yPosIcon] = this.getIconPosition();
-        this.svgImage.move(xPosIcon, yPosIcon);
-    }
-
 
     private drawLifeSegments(context: G): void {
         const fillColor = this.person.gender == "f" ? this.segmentColorFemale : this.segmentColorMale;
@@ -141,13 +120,8 @@ export class PersonGlyph implements IGlyph {
 
     private getTextPosition(){
         let xPos = this.x * this.segmentScaleX;
-        xPos += this.getLifespanLengthInPixels() < this.segmentHeight + 20 ?
-        0 : 
-        this.segmentHeight;
-
-
-
-        let yPos = this.y + this.segmentHeight / 2 - this.textSize + 2
+        xPos += (this.getLifespanLengthInPixels() < this.segmentHeight + 20) ? 0 : this.segmentHeight;
+        let yPos = this.y + this.textSize / 2.8
 
         return [xPos, yPos]
     }
