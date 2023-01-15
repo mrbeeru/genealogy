@@ -71,7 +71,7 @@ export class DefaultGraph {
         this.timeAxis.draw(this.timeAxisCtx);
         this.glyphs.forEach(x => x.draw(this.graphGroup));
 
-        this.translateGraph(0, 0)
+        this.translateGraph(100, 40)
         
     }
 
@@ -187,12 +187,6 @@ export class DefaultGraph {
             if (this.drag.y >= 0)
                 this.drag.y += y;
             else this.drag.y = y;
-
-            //if (this.drag.x >= 0)
-                //this.drag.x = x;
-            //else this.drag.x = x;
-            
-            //console.log("x drag: " + this.drag.x, e.detail.box.x)
         })
     }
 
@@ -200,21 +194,15 @@ export class DefaultGraph {
         this.ctx.on('wheel', (e: any) => {
             let transform = this.graphGroup.transform();
 
-            let a = (e.offsetX - (transform.e ?? 0)) / this.config.zoom;
-            let b = (e.offsetY - (transform.f ?? 0)) / this.config.zoom
-            
-            if (e.deltaY > 0)
-            {
-                this.config.zoom *= 0.9
-                this.graphGroup.scale(0.9, 0.9, a,b);
-                this.gridGroup.scale(0.9, 1, a, b);
-            }
-            else
-            {
-                this.config.zoom *= 1.1
-                this.graphGroup.scale(1.1, 1.1, a,b);
-                this.gridGroup.scale(1.1, 1, a, b);
-            }
+            // mouse location?
+            let cx = (e.offsetX - (transform.e ?? 0)) / this.config.zoom;
+            let cy = (e.offsetY - (transform.f ?? 0)) / this.config.zoom
+
+            let factor = e.deltaY > 0 ? 0.9 : 1.1;
+            this.config.zoom *= factor
+            this.graphGroup.scale(factor, factor, cx, cy);
+            this.gridGroup.scale(factor, 1, cx, cy);
+
 
             transform = this.graphGroup.transform();
             this.timeAxis.resizeTimeAxis(this.config.zoom, this.graphGroup.transform().translateX ?? 0);
@@ -241,5 +229,8 @@ export class DefaultGraph {
         this.graphGroup.translate(x, y);
         this.gridGroup.translate(x, 0);
         this.timeAxis.move(x)
+
+        this.drag.x = x
+        this.drag.y = y
     }
 }
