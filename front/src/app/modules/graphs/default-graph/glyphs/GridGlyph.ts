@@ -26,7 +26,6 @@ export class GridGlyph implements IGlyph
         this.segmentLength = segmentLength;
         this.presentYear = presentYear;
         this.xOffset = xOffset
-        console.log(this.xOffset)
         this.colors = colors;
     }
 
@@ -53,11 +52,16 @@ export class GridGlyph implements IGlyph
             line.dragMove(x, 0)
 
         this.indicatorLine.translate(x, 0)
-        this.xOffset += x;
+        //this.xOffset += x;
     }
 
     moveIndicator(x: number, dx: number, scale: number){
-        this.indicatorLine.transform({translateX: (x - dx) / scale})
+        var xpos = (x - dx) / scale;
+        let maxXpos = Math.ceil((this.presentYear - this.startYear) / this.resolution) * this.segmentLength;
+        
+        xpos = xpos < 0 ? 0 : xpos > maxXpos ? maxXpos : xpos;
+        
+        this.indicatorLine.transform({translateX: xpos})
     }
 
     scaleX(scalex: number)
