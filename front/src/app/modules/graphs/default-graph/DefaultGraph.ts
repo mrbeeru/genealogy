@@ -1,4 +1,5 @@
 
+import { Line } from '@svgdotjs/svg.js';
 import { G, Svg } from '@svgdotjs/svg.js';
 import { PersonV2 } from 'src/app/modules/core/models/person.model';
 import { FamilyTree } from '../../core/FamilyTree';
@@ -36,7 +37,7 @@ export class DefaultGraph {
 
     private startYear = 0;
     private endYear = 2022;
-    private yOffset = 10;
+    private yOffset = 0;
     private glyphs: IGlyph[] = [];
 
     private ctx: Svg;
@@ -45,7 +46,9 @@ export class DefaultGraph {
     private timeAxis!: TimeAxis;
     private grid!: GridGlyph;
     private familyTree: FamilyTree;
-    private grp!: G;
+    private graphGroup!: G;
+    private gridGroup!: G;
+    private indicatorLine!: Line;
 
     private drag = {x: 10, y: 0, isDragging: false}
     private alreadyBuilt: Set<PersonV2> = new Set<PersonV2>();
@@ -53,7 +56,8 @@ export class DefaultGraph {
     constructor(members: PersonV2[], ctx: Svg, timeAxisCtx: Svg) {
         this.familyTree = new FamilyTree(members);
         this.ctx = ctx;
-        this.grp = ctx.group();
+        this.graphGroup = ctx.group();
+        this.gridGroup = ctx.group();
         this.timeAxisCtx = timeAxisCtx;
 
         this.build();
@@ -64,11 +68,12 @@ export class DefaultGraph {
     }
 
     draw() {
-        this.glyphs.forEach(x => x.draw(this.grp));
+        this.glyphs.forEach(x => x.draw(this.graphGroup));
         this.timeAxis.draw(this.timeAxisCtx);
+        this.grid.draw(this.gridGroup)
 
-        //move to the right a bit
-        this.drag.x += - (this.startYear%this.config.resolution) / this.config.resolution * this.config.segmentLength
+        this.translateGraph(0, 0)
+        
     }
 
     private build() {
@@ -129,7 +134,6 @@ export class DefaultGraph {
         }
 
         this.grid = new GridGlyph(this.startYear, 2022, this.config.resolution, this.config.segmentLength, this.drag.x, colors)
-        this.glyphs.push(this.grid);
     }
 
     private buildTimeAxis(){
@@ -156,23 +160,41 @@ export class DefaultGraph {
     }
 
     private addPan(){
-        this.ctx.draggable(true);
-        this.ctx.on('dragmove', (e:any) => {
-            e.preventDefault()
+        //this.ctx.draggable(true);
+        this.ctx.draggable().on('dragmove', (e:any) => {
 
-            let transformMatrix = this.grp.transform();
-            transformMatrix.e = e.detail.box.x;
-            transformMatrix.f = e.detail.box.y;
+            let [x, y] = [e.detail.box.x, e.detail.box.y];
 
-            this.grp.transform(transformMatrix);
+            //console.log(e.detail.box)
+            let tm = this.gridGroup.transform();
+            tm.e = e.detail.box.x;
+            this.gridGroup.transform(tm);
+
+            let transformMatrix = this.graphGroup.transform();
+            transformMatrix.e = x;
+            transformMatrix.f = y;
+
+            //this.grp.translate(e.detail.box.x, e.detail.box.y)
+            this.graphGroup.transform(transformMatrix);
             this.timeAxis.move(transformMatrix.translateX ?? 0)
-        }) 
+
+            console.log(e.detail)
+        })
+
+        // this.ctx.on('dragstart', (e: any) => {
+        //     console.log(e)
+        // })
+
+        // this.ctx.on('dragend', (e: any) => {
+        //     console.log(e)
+        // })
     }
 
     private addZoom(){
         this.ctx.on('wheel', (e: any) => {
+            //e.preventDefault();
 
-            let transform = this.grp.transform();
+            let transform = this.graphGroup.transform();
 
             let a = (e.offsetX - (transform.e ?? 0)) / this.config.zoom;
             let b = (e.offsetY - (transform.f ?? 0)) / this.config.zoom
@@ -180,22 +202,24 @@ export class DefaultGraph {
             if (e.deltaY > 0)
             {
                 this.config.zoom *= 0.9
-                this.grp.scale(0.9, 0.9, a,b);
+                this.graphGroup.scale(0.9, 0.9, a,b);
+                this.gridGroup.scale(0.9, 1, a, b);
             }
             else
             {
                 this.config.zoom *= 1.1
-                this.grp.scale(1.1, 1.1, a,b);
+                this.graphGroup.scale(1.1, 1.1, a,b);
+                this.gridGroup.scale(1.1, 1, a, b);
             }
 
-            transform = this.grp.transform();
-            this.timeAxis.resizeTimeAxis(this.config.zoom, this.grp.transform().translateX ?? 0);
+            transform = this.graphGroup.transform();
+            this.timeAxis.resizeTimeAxis(this.config.zoom, this.graphGroup.transform().translateX ?? 0);
         })
     }
 
     private addMouseMove(){
         this.ctx.on("mousemove", (x : any) => {
-            let dx = this.grp.transform().translateX ?? 0;
+            let dx = this.graphGroup.transform().translateX ?? 0;
 
             let calc = (x.offsetX + this.config.segmentLength / this.config.resolution/2 * this.config.zoom ) - 
                         (x.offsetX - this.config.segmentLength / this.config.resolution / 2 * this.config.zoom - dx) % 
@@ -204,5 +228,12 @@ export class DefaultGraph {
             this.timeAxis.moveIndicator(calc, dx, this.config.zoom);
             this.grid.moveIndicator(calc, dx, this.config.zoom);
         })
+    }
+
+    private translateGraph(x: number, y: number)
+    {
+        this.graphGroup.translate(x, y);
+        this.gridGroup.translate(x, 0);
+        this.timeAxis.move(x)
     }
 }
