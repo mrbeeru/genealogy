@@ -59,7 +59,7 @@ export class GridGlyph implements IGlyph
         var xpos = (x - dx) / scale;
         let maxXpos = Math.ceil((this.presentYear - this.startYear) / this.resolution) * this.segmentLength;
         
-        //xpos = xpos < 0 ? 0 : xpos > maxXpos ? maxXpos : xpos;
+        xpos = xpos < 0 ? 0 : xpos > maxXpos ? maxXpos : xpos;
         
         this.indicatorLine.transform({translateX: xpos})
     }
