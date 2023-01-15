@@ -165,7 +165,7 @@ export class DefaultGraph {
 
             let [x, y] = [e.detail.box.x, e.detail.box.y];
 
-            //console.log(e.detail.box)
+            console.log(e.detail.box.y)
             let tm = this.gridGroup.transform();
             tm.e = e.detail.box.x;
             this.gridGroup.transform(tm);
@@ -174,20 +174,36 @@ export class DefaultGraph {
             transformMatrix.e = x;
             transformMatrix.f = y;
 
+            if (this.drag.y > 0)
+                transformMatrix.f = this.drag.y + y;
+
+            //if (this.drag.x > 0)
+            //    transformMatrix.e = this.drag.x + x;
+
             //this.grp.translate(e.detail.box.x, e.detail.box.y)
             this.graphGroup.transform(transformMatrix);
             this.timeAxis.move(transformMatrix.translateX ?? 0)
 
-            console.log(e.detail)
         })
 
         // this.ctx.on('dragstart', (e: any) => {
         //     console.log(e)
         // })
 
-        // this.ctx.on('dragend', (e: any) => {
-        //     console.log(e)
-        // })
+        this.ctx.on('dragend', (e: any) => {
+            let [x,y] = [e.detail.box.x, e.detail.box.y];
+            this.drag.x = x;
+
+            if (this.drag.y >= 0)this.drag.y += y;
+            else this.drag.y = y;
+
+            if (this.drag.x < 0)
+                this.drag.x += x;
+            else this.drag.x = x;
+            
+            console.log(e.detail.box.x, e.detail.box.y)
+            console.log(this.drag.y, y)
+        })
     }
 
     private addZoom(){
@@ -198,7 +214,7 @@ export class DefaultGraph {
 
             let a = (e.offsetX - (transform.e ?? 0)) / this.config.zoom;
             let b = (e.offsetY - (transform.f ?? 0)) / this.config.zoom
-
+            
             if (e.deltaY > 0)
             {
                 this.config.zoom *= 0.9
@@ -214,6 +230,8 @@ export class DefaultGraph {
 
             transform = this.graphGroup.transform();
             this.timeAxis.resizeTimeAxis(this.config.zoom, this.graphGroup.transform().translateX ?? 0);
+            this.drag.y = this.graphGroup.transform().f ?? 0;
+            this.drag.x = this.graphGroup.transform().e ?? 0;
         })
     }
 

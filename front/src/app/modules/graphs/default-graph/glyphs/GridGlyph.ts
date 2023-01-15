@@ -26,7 +26,6 @@ export class GridGlyph implements IGlyph
         this.segmentLength = segmentLength;
         this.presentYear = presentYear;
         this.xOffset = xOffset
-        console.log(this.xOffset)
         this.colors = colors;
     }
 
