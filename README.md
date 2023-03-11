@@ -1,6 +1,6 @@
 # genealogy
 
-appsettings.json file
+appsettings.json file (test)
 ```json
 {
   "Logging": {
