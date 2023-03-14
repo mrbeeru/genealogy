@@ -21,7 +21,7 @@ jobs:
       
       - name: Test Connectivity
         run: |
-          ping 45.148.30.77
+          ping -c 10 45.148.30.77
       
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v3
