@@ -16,11 +16,12 @@ jobs:
       run:
         working-directory: ./back
     steps:
+
+      - uses: actions/checkout@v3
+      
       - name: Test Connectivity
         run: |
           ping 45.148.30.77
-      
-      - uses: actions/checkout@v3
       
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v3
