@@ -43,6 +43,5 @@ jobs:
           username: ${{ secrets.USERNAME }}
           port: ${{ secrets.PORT }}
           key: ${{ secrets.SSHKEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
           source: "/home/runner/work/genealogy/genealogy/back/Genealogy/bin/Release/net6.0/*"
           target: "~/temp"
