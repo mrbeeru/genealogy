@@ -19,10 +19,6 @@ jobs:
 
       - uses: actions/checkout@v3
       
-      - name: Test Connectivity
-        run: |
-          ping -c 10 45.148.30.77
-      
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v3
         with:
@@ -34,12 +30,12 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
         
-      - name: Add ssh key to agent
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SSHKEY }}
-          ssh-auth-sock: 22
-          log-public-key: false
+#      - name: Add ssh key to agent
+#        uses: webfactory/ssh-agent@v0.7.0
+#        with:
+#          ssh-private-key: ${{ secrets.SSHKEY }}
+#          ssh-auth-sock: 22
+#          log-public-key: false
         
       - name: Deploy
         uses: appleboy/scp-action@master
