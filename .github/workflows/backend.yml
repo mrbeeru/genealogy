@@ -30,19 +30,12 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
         
-#      - name: Add ssh key to agent
-#        uses: webfactory/ssh-agent@v0.7.0
-#        with:
-#          ssh-private-key: ${{ secrets.SSHKEY }}
-#          ssh-auth-sock: 22
-#          log-public-key: false
-        
       - name: Deploy
         uses: appleboy/scp-action@master
         with:
-          host: ${{ vars.HOSTNAME }}
-          username: ${{ vars.USERNAME }}
-          port: ${{ vars.PORT }}
+          host: ${{ secrets.HOSTNAME }}
+          username: ${{ secrets.USERNAME }}
+          port: ${{ secrets.PORT }}
           key: ${{ secrets.SSHKEY }}
           source: "/home/runner/work/genealogy/genealogy/back/Genealogy/bin/Release/net6.0/*"
           target: "~/temp"
