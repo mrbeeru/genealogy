@@ -37,5 +37,5 @@ jobs:
           username: ${{ secrets.USERNAME }}
           port: ${{ secrets.PORT }}
           key: ${{ secrets.SSHKEY }}
-          source: "/home/runner/work/genealogy/genealogy/back/Genealogy/bin/Release/net6.0/*"
+          source: "./CartuningServer/bin/Release/net7.0"
           target: "~/temp"
