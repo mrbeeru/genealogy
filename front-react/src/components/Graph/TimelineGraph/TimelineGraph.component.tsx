@@ -21,10 +21,10 @@ export default function TimelineGraph({ persons }: { persons: PersonDTO[] }) {
     const [scale, setScale] = useState<Vector2d>({ x: 1, y: 1 });
     const renders = useRef(0);
 
-    renders.current++;
-    if (renders.current % 1 === 0) {
-        console.log(`${renders.current / 1000}k`);
-    }
+    // renders.current++;
+    // if (renders.current % 1 === 0) {
+    //     console.log(`${renders.current / 1000}k`);
+    // }
 
     const elements = buildGraph(origin[0], persons, new Map<PersonDTO, Vector2d>(), startYear, scale.x);
 
@@ -33,7 +33,7 @@ export default function TimelineGraph({ persons }: { persons: PersonDTO[] }) {
     yOffset = 10;
 
     const width = 2560;
-    const height = 1249;
+    const height = 1255;
 
     const onDragMove = (e: KonvaEventObject<DragEvent>) => {
         e.evt.preventDefault();
@@ -86,7 +86,7 @@ export default function TimelineGraph({ persons }: { persons: PersonDTO[] }) {
         <>
             <Stage width={width} height={height + 34} style={{ overflow: 'hidden' }}>
                 <Layer height={34} mouse>
-                    <Rect width={width} height={34} fill="#999"></Rect>
+                    <Rect width={width} height={34} fill="#0001"></Rect>
                     <Group offset={{ x: -stagePos.x, y: 0 }}>
                         {timestamps.map((x) => x)}
                         <Indicator
@@ -203,9 +203,13 @@ function buildTimeaxis(
     let diff = ((startYear % resolution) / resolution) * segmentLength;
 
     if (zoom < 0.5) {
-        iterations /= 2;
-        segmentLength = 200;
-        resolution = 20;
+        iterations /= 5;
+        segmentLength = 500;
+        resolution = 50;
+        // } else if (zoom < 0.5) {
+        //     iterations /= 2;
+        //     segmentLength = 200;
+        //     resolution = 20;
     } else if (zoom < 5) {
     } else if (zoom >= 5) {
         iterations *= 10;
@@ -219,7 +223,7 @@ function buildTimeaxis(
         const x = (i * segmentLength - diff) * zoom;
         const y = 20;
 
-        elements.push(<Text x={x - 14} y={y} text={`${year + i * resolution}`} fontStyle=""></Text>);
+        elements.push(<Text x={x - 14} y={y} text={`${year + i * resolution}`}></Text>);
         elements.push(<Line points={[x, 34, x, 1440]} stroke={'#0002'} strokeWidth={1}></Line>);
     }
 
@@ -251,11 +255,11 @@ function getSpouses(person: PersonDTO, persons: PersonDTO[]): PersonDTO[] {
 }
 
 function getChildren(person: PersonDTO, persons: PersonDTO[]): PersonDTO[] {
-    return persons.filter((x) => x.fatherId == person.id || x.motherId == person.id);
+    return persons.filter((x) => x.fatherId === person.id || x.motherId === person.id);
 }
 
 function getParents(person: PersonDTO, persons: PersonDTO[]): PersonDTO[] {
-    return persons.filter((x) => x.id == person.motherId || x.id == person.fatherId);
+    return persons.filter((x) => x.id === person.motherId || x.id === person.fatherId);
 }
 
 function getLifespanLengthInPixels(person: PersonDTO): number {
