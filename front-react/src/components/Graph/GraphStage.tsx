@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from 'react';
 import { PersonApi } from '../../api/controllers/PersonApi';
 import { PersonDTO } from '../../api/dto/PersonDTO';
 import TimelineGraph from './TimelineGraph/TimelineGraph.component';
-import TimelineGrid from './TimelineGraph/TimelineGrid.component';
 
 export default function GraphStage() {
     const [zoom, setZoom] = useState(1);
@@ -29,19 +28,8 @@ export default function GraphStage() {
         <>
             {persons.length && (
                 <>
-                    <TimelineGrid drag={offset} zoom={zoom} mousePos={mousePos} minYear={minYear}></TimelineGrid>
-                    <TimelineGraph
-                        onOffsetChanged={(mvt) => {
-                            setOffset(mvt);
-                        }}
-                        onZoomChanged={(zoom) => {
-                            setZoom(zoom);
-                        }}
-                        onMouseMove={(pos) => {
-                            setMousePos(pos);
-                        }}
-                        persons={persons}
-                    ></TimelineGraph>
+                    {/* <TimelineGrid drag={offset} zoom={zoom} mousePos={mousePos} minYear={minYear}></TimelineGrid> */}
+                    <TimelineGraph persons={persons}></TimelineGraph>
                 </>
             )}
         </>

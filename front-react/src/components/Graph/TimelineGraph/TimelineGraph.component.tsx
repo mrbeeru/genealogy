@@ -1,110 +1,140 @@
+import { KonvaEventObject } from 'konva/lib/Node';
 import { Vector2d } from 'konva/lib/types';
-import { useRef } from 'react';
-import { Group, Layer, Stage } from 'react-konva';
+import { useRef, useState } from 'react';
+import { Group, Layer, Line, Rect, Stage, Text } from 'react-konva';
 import { PersonDTO } from '../../../api/dto/PersonDTO';
+import Indicator from './Indicator.component';
 import Lifespan from './Lifespan.component';
+import Relation from './Relation.component';
 
 const resolution = 10;
 const segmentLength = 100;
+let yOffset: number = 10;
 
-export default function TimelineGraph({
-    onOffsetChanged,
-    onZoomChanged,
-    onMouseMove,
-    persons,
-}: {
-    onOffsetChanged?: (dir: Vector2d) => void;
-    onZoomChanged?: (zoom: number) => void;
-    onMouseMove?: (pos: Vector2d) => void;
-    persons: PersonDTO[];
-}) {
+export default function TimelineGraph({ persons }: { persons: PersonDTO[] }) {
     const stageRef = useRef<any>(null);
-    const groupRef = useRef<any>(null);
     const startYear = getOldestMemberYear(persons);
     const origin = getOrigins(persons).sort((x, y) => x.birthDate.year - y.birthDate.year);
-    const lifespans = buildGraph(origin[0], persons, new Set<PersonDTO>(), startYear);
+
+    const [offset, setOffset] = useState<Vector2d>({ x: 0, y: 0 });
+    const [mousePos, setMousePos] = useState<Vector2d>({ x: 0, y: 0 });
+    const [scale, setScale] = useState<Vector2d>({ x: 1, y: 1 });
+    const renders = useRef(0);
+
+    renders.current++;
+    if (renders.current % 1 === 0) {
+        console.log(`${renders.current / 1000}k`);
+    }
+
+    const elements = buildGraph(origin[0], persons, new Map<PersonDTO, Vector2d>(), startYear, scale.x);
+
+    const timestamps = buildTimeaxis(startYear, 2023, 100, 10, scale.x);
+
     yOffset = 10;
 
+    const width = 2560;
+    const height = 1249;
+
+    const onDragMove = (e: KonvaEventObject<DragEvent>) => {
+        e.evt.preventDefault();
+        const x = stageRef.current.x();
+        const y = stageRef.current.y();
+        const pointer = stageRef.current?.getPointerPosition();
+        setOffset({ x, y });
+        setMousePos(pointer);
+    };
+
+    const onMouseMoved = (e: KonvaEventObject<MouseEvent>) => {
+        const pointer = stageRef.current.getPointerPosition();
+        setMousePos(pointer);
+    };
+
+    const onWheel = (e: KonvaEventObject<WheelEvent>) => {
+        e.evt.preventDefault();
+        const scaleBy = 1.1;
+        const stage = stageRef.current;
+
+        var oldScale = scale.x;
+        var pointer = stage.getPointerPosition();
+
+        var mousePointTo = {
+            x: (pointer.x - stage.x()) / oldScale,
+            y: (pointer.y - stage.y()) / oldScale,
+        };
+
+        // how to scale? Zoom in? Or zoom out?
+        let direction = e.evt.deltaY < 0 ? 1 : -1;
+
+        // when we zoom on trackpad, e.evt.ctrlKey is true
+        // in that case lets revert direction
+        if (e.evt.ctrlKey) {
+            direction = -direction;
+        }
+
+        var newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+
+        var newPos = {
+            x: pointer.x - mousePointTo.x * newScale,
+            y: pointer.y - mousePointTo.y * newScale,
+        };
+        //stage.position(newPos);
+
+        setOffset(newPos);
+        setScale({ x: newScale, y: newScale });
+    };
+
     return (
-        <Stage
-            style={{ position: 'absolute', top: 40, overflow: 'hidden' }}
-            ref={stageRef}
-            width={2560}
-            height={1200}
-            draggable
-            onDragMove={(e) => {
-                e.evt.preventDefault();
-                const x = stageRef.current.x();
-                const y = stageRef.current.y();
-                const pointer = stageRef.current?.getPointerPosition();
-                onOffsetChanged?.({ x: x, y: y });
-                onMouseMove?.(pointer);
-            }}
-            onWheel={(e) => {
-                e.evt.preventDefault();
-                const scaleBy = 1.1;
-                const stage = stageRef.current;
-                const group = groupRef.current;
-
-                var oldScale = group.scaleX();
-                var pointer = stage.getPointerPosition();
-
-                var mousePointTo = {
-                    x: (pointer.x - stage.x()) / oldScale,
-                    y: (pointer.y - stage.y()) / oldScale,
-                };
-
-                // how to scale? Zoom in? Or zoom out?
-                let direction = e.evt.deltaY < 0 ? 1 : -1;
-
-                // when we zoom on trackpad, e.evt.ctrlKey is true
-                // in that case lets revert direction
-                if (e.evt.ctrlKey) {
-                    direction = -direction;
-                }
-
-                var newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy;
-
-                group.scale({ x: newScale, y: newScale });
-
-                var newPos = {
-                    x: pointer.x - mousePointTo.x * newScale,
-                    y: pointer.y - mousePointTo.y * newScale,
-                };
-                stage.position(newPos);
-                onOffsetChanged?.(newPos);
-                onZoomChanged?.(newScale);
-            }}
-            onMouseMove={(e) => {
-                const pointer = stageRef.current.getPointerPosition();
-                onMouseMove?.(pointer);
-            }}
-        >
-            <Layer>
-                <Group ref={groupRef} y={40} x={0}>
-                    {lifespans.map((l) => l)}
-                </Group>
-            </Layer>
-        </Stage>
+        <>
+            <Stage width={width} height={height + 40} style={{ overflow: 'hidden' }}>
+                <Layer height={40} mouse>
+                    <Rect width={width} height={40} fill="#999"></Rect>
+                    <Group offset={{ x: -offset.x, y: 0 }}>
+                        {timestamps.map((x) => x)}
+                        <Indicator offset={offset} mousePos={mousePos}></Indicator>
+                    </Group>
+                </Layer>
+            </Stage>
+            <Stage
+                style={{ position: 'absolute', top: 40, overflow: 'hidden' }}
+                ref={stageRef}
+                width={width}
+                height={height}
+                draggable
+                onDragMove={onDragMove}
+                onWheel={onWheel}
+                onMouseMove={onMouseMoved}
+                x={offset.x}
+                y={offset.y}
+            >
+                <Layer>
+                    <Group y={20} x={0}>
+                        <Group scale={scale}>{elements.lifespans.map((l) => l)}</Group>
+                        <Group scale={scale}>{elements.relations.map((r) => r)}</Group>
+                        <Group></Group>
+                    </Group>
+                </Layer>
+            </Stage>
+        </>
     );
 }
-
-let yOffset: number = 10;
 
 function buildGraph(
     person: PersonDTO,
     persons: PersonDTO[],
-    alreadyBuilt: Set<PersonDTO>,
+    alreadyBuilt: Map<PersonDTO, Vector2d>,
     // yOffset: number,
-    startYear: number
-): React.ReactNode[] {
-    const nodes: React.ReactNode[] = [];
+    startYear: number,
+    zoom: number
+): { lifespans: React.ReactNode[]; relations: React.ReactNode[] } {
+    const lifespans: React.ReactNode[] = [];
+    const relations: React.ReactNode[] = [];
 
     if (person == null || alreadyBuilt.has(person)) {
-        return [];
+        return { lifespans: [], relations: [] };
     }
 
-    const lifespan = (
+    // build for current person
+    const personLifespan = (
         <Lifespan
             x={getLifespanOffset(person.birthDate.year, startYear)}
             y={yOffset}
@@ -113,12 +143,15 @@ function buildGraph(
             person={person}
         ></Lifespan>
     );
-    nodes.push(lifespan);
+    lifespans.push(personLifespan);
+    alreadyBuilt.set(person, { x: getLifespanOffset(person.birthDate.year, startYear), y: yOffset });
 
-    getSpouses(person, persons).map((spouse) => {
-        yOffset += 22;
+    // build for spouse
+    const spousesLifespan = getSpouses(person, persons).map((spouse) => {
+        yOffset += 21;
+        alreadyBuilt.set(spouse, { x: getLifespanOffset(spouse.birthDate.year, startYear), y: yOffset });
 
-        nodes.push(
+        return (
             <Lifespan
                 x={getLifespanOffset(spouse.birthDate.year, startYear)}
                 y={yOffset}
@@ -127,19 +160,68 @@ function buildGraph(
                 person={spouse}
             ></Lifespan>
         );
-        alreadyBuilt.add(spouse);
     });
 
-    alreadyBuilt.add(person);
+    lifespans.push(spousesLifespan);
+
     yOffset += 50;
 
-    nodes.push(
-        getChildren(person, persons)
-            .sort((a, b) => (a.birthDate.year < b.birthDate.year ? 1 : -1))
-            .map((p) => buildGraph(p, persons, alreadyBuilt, startYear))
-    );
+    // build relations
+    const parents = getParents(person, persons);
+    if (parents.length) {
+        const personPos = alreadyBuilt.get(person);
+        const parentsPos = parents.map((x) => alreadyBuilt.get(x) as Vector2d).filter((x) => x);
 
-    return nodes;
+        if (personPos && parentsPos && parentsPos.length) {
+            const relation = <Relation personPos={personPos} parentsPos={parentsPos} zoom={zoom}></Relation>;
+            relations.push(relation);
+        }
+    }
+
+    // build for children
+    const childrenLifespans = getChildren(person, persons)
+        .sort((a, b) => (a.birthDate.year < b.birthDate.year ? 1 : -1))
+        .map((p) => buildGraph(p, persons, alreadyBuilt, startYear, zoom));
+
+    lifespans.push(childrenLifespans.map((x) => x.lifespans));
+    relations.push(childrenLifespans.map((x) => x.relations));
+
+    return { lifespans: lifespans, relations: relations };
+}
+
+function buildTimeaxis(
+    startYear: number,
+    endYear: number,
+    segmentLength: number,
+    resolution: number,
+    zoom: number
+): React.ReactNode[] {
+    let year = startYear - (startYear % resolution);
+    let iterations = (endYear - startYear) / resolution + 1;
+    let diff = ((startYear % resolution) / resolution) * segmentLength;
+
+    if (zoom < 0.5) {
+        iterations /= 2;
+        segmentLength = 200;
+        resolution = 20;
+    } else if (zoom < 5) {
+    } else if (zoom >= 5) {
+        iterations *= 10;
+        segmentLength = 10;
+        resolution = 1;
+    }
+
+    let elements: React.ReactNode[] = [];
+
+    for (let i = 0; i < iterations; i++) {
+        const x = (i * segmentLength - diff) * zoom;
+        const y = 16;
+
+        elements.push(<Text x={x - 14} y={y} text={`${year + i * resolution}`}></Text>);
+        elements.push(<Line points={[x, 40, x, 1440]} stroke={'rgba(0,0,0,0.1)'} strokeWidth={1}></Line>);
+    }
+
+    return elements;
 }
 
 function getOldestMemberYear(persons: PersonDTO[]): number {
@@ -168,6 +250,10 @@ function getSpouses(person: PersonDTO, persons: PersonDTO[]): PersonDTO[] {
 
 function getChildren(person: PersonDTO, persons: PersonDTO[]): PersonDTO[] {
     return persons.filter((x) => x.fatherId == person.id || x.motherId == person.id);
+}
+
+function getParents(person: PersonDTO, persons: PersonDTO[]): PersonDTO[] {
+    return persons.filter((x) => x.id == person.motherId || x.id == person.fatherId);
 }
 
 function getLifespanLengthInPixels(person: PersonDTO): number {
