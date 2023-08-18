@@ -1,8 +1,13 @@
-import { Vector2d } from 'konva/lib/types';
-import { Line } from 'react-konva';
+import { Group, Line, Rect, Text } from 'react-konva';
 
-export default function Indicator({ mousePos, offset }: { mousePos: Vector2d; offset: Vector2d }) {
+export default function Indicator({ x, year }: { x: number; year: number }) {
     return (
-        <Line points={[mousePos.x - offset.x, 40, mousePos.x - offset.x, 1440]} stroke={'#7777'} dash={[5, 5]}></Line>
+        <>
+            <Group x={-5}>
+                <Rect x={x} y={0} width={10} height={34} fill="#0002"></Rect>
+                <Text x={x - 8} y={4} text={`${year}`} fontStyle="bold"></Text>
+            </Group>
+            <Line points={[x, 34, x, 1440]} stroke={'#7777'} dash={[5, 5]}></Line>
+        </>
     );
 }

@@ -16,7 +16,7 @@ export default function TimelineGraph({ persons }: { persons: PersonDTO[] }) {
     const startYear = getOldestMemberYear(persons);
     const origin = getOrigins(persons).sort((x, y) => x.birthDate.year - y.birthDate.year);
 
-    const [offset, setOffset] = useState<Vector2d>({ x: 0, y: 0 });
+    const [stagePos, setStagePos] = useState<Vector2d>({ x: 0, y: 0 });
     const [mousePos, setMousePos] = useState<Vector2d>({ x: 0, y: 0 });
     const [scale, setScale] = useState<Vector2d>({ x: 1, y: 1 });
     const renders = useRef(0);
@@ -40,7 +40,7 @@ export default function TimelineGraph({ persons }: { persons: PersonDTO[] }) {
         const x = stageRef.current.x();
         const y = stageRef.current.y();
         const pointer = stageRef.current?.getPointerPosition();
-        setOffset({ x, y });
+        setStagePos({ x, y });
         setMousePos(pointer);
     };
 
@@ -77,25 +77,27 @@ export default function TimelineGraph({ persons }: { persons: PersonDTO[] }) {
             x: pointer.x - mousePointTo.x * newScale,
             y: pointer.y - mousePointTo.y * newScale,
         };
-        //stage.position(newPos);
 
-        setOffset(newPos);
+        setStagePos(newPos);
         setScale({ x: newScale, y: newScale });
     };
 
     return (
         <>
-            <Stage width={width} height={height + 40} style={{ overflow: 'hidden' }}>
-                <Layer height={40} mouse>
-                    <Rect width={width} height={40} fill="#999"></Rect>
-                    <Group offset={{ x: -offset.x, y: 0 }}>
+            <Stage width={width} height={height + 34} style={{ overflow: 'hidden' }}>
+                <Layer height={34} mouse>
+                    <Rect width={width} height={34} fill="#999"></Rect>
+                    <Group offset={{ x: -stagePos.x, y: 0 }}>
                         {timestamps.map((x) => x)}
-                        <Indicator offset={offset} mousePos={mousePos}></Indicator>
+                        <Indicator
+                            x={mousePos.x - stagePos.x}
+                            year={getYearFromMousePosition(startYear, mousePos.x - stagePos.x, scale.x)}
+                        ></Indicator>
                     </Group>
                 </Layer>
             </Stage>
             <Stage
-                style={{ position: 'absolute', top: 40, overflow: 'hidden' }}
+                style={{ position: 'absolute', top: 34, overflow: 'hidden' }}
                 ref={stageRef}
                 width={width}
                 height={height}
@@ -103,13 +105,13 @@ export default function TimelineGraph({ persons }: { persons: PersonDTO[] }) {
                 onDragMove={onDragMove}
                 onWheel={onWheel}
                 onMouseMove={onMouseMoved}
-                x={offset.x}
-                y={offset.y}
+                x={stagePos.x}
+                y={stagePos.y}
             >
                 <Layer>
                     <Group y={20} x={0}>
-                        <Group scale={scale}>{elements.lifespans.map((l) => l)}</Group>
                         <Group scale={scale}>{elements.relations.map((r) => r)}</Group>
+                        <Group scale={scale}>{elements.lifespans.map((l) => l)}</Group>
                         <Group></Group>
                     </Group>
                 </Layer>
@@ -215,10 +217,10 @@ function buildTimeaxis(
 
     for (let i = 0; i < iterations; i++) {
         const x = (i * segmentLength - diff) * zoom;
-        const y = 16;
+        const y = 20;
 
-        elements.push(<Text x={x - 14} y={y} text={`${year + i * resolution}`}></Text>);
-        elements.push(<Line points={[x, 40, x, 1440]} stroke={'rgba(0,0,0,0.1)'} strokeWidth={1}></Line>);
+        elements.push(<Text x={x - 14} y={y} text={`${year + i * resolution}`} fontStyle=""></Text>);
+        elements.push(<Line points={[x, 34, x, 1440]} stroke={'#0002'} strokeWidth={1}></Line>);
     }
 
     return elements;
@@ -257,9 +259,14 @@ function getParents(person: PersonDTO, persons: PersonDTO[]): PersonDTO[] {
 }
 
 function getLifespanLengthInPixels(person: PersonDTO): number {
-    const presentYear: number = new Date().getUTCFullYear();
+    const presentYear: number = getCurrentDecimalYear();
     const birthYear = person.birthDate.year;
-    const endYear = person.deathDate?.year ?? presentYear;
+    let endYear = presentYear;
+
+    if (person.deathDate) {
+        endYear = person.deathDate.year ?? presentYear;
+    }
+
     const age = endYear - birthYear;
     let length = (age / resolution) * segmentLength;
     return length;
@@ -267,4 +274,15 @@ function getLifespanLengthInPixels(person: PersonDTO): number {
 
 function getLifespanOffset(birthYear: number, startYear: number): number {
     return ((birthYear - startYear) / resolution) * segmentLength;
+}
+
+function getCurrentDecimalYear(): number {
+    const now = new Date();
+
+    return now.getUTCFullYear() + now.getUTCMonth() / 12 + now.getUTCDay() / 30;
+}
+
+function getYearFromMousePosition(startYear: number, x: number, scale: number) {
+    const resolution = 10;
+    return startYear + Math.floor(x / (resolution * scale));
 }

@@ -16,16 +16,16 @@ export default function Relation({
     return (
         <>
             {parentsPos.map((p) => (
-                <Circle radius={radius} x={personPos.x} y={p.y + segmentHeight / 2} fill="#333"></Circle>
+                <Circle radius={radius} x={personPos.x} y={p.y + segmentHeight / 2} fill="black"></Circle>
             ))}
             <Line
                 points={[
                     personPos.x,
                     Math.min(...parentsPos.map((x) => x.y)) + segmentHeight / 2,
                     personPos.x,
-                    personPos.y + 0,
+                    personPos.y,
                 ]}
-                stroke="#333"
+                stroke="#0007"
                 strokeWidth={1 / zoom}
             ></Line>
         </>
