@@ -11,8 +11,8 @@ export interface PersonDTO {
     };
     firstName: string;
     lastName: string;
-    motherId: string;
-    fatherId: string;
+    motherId?: string;
+    fatherId?: string;
     childrenIds: string[];
     spouseIds: string[];
     id: string;

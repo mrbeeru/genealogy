@@ -19,8 +19,8 @@ export default function TimelineGraph({ persons }: { persons: PersonDTO[] }) {
     const [stagePos, setStagePos] = useState<Vector2d>({ x: 0, y: 0 });
     const [mousePos, setMousePos] = useState<Vector2d>({ x: 0, y: 0 });
     const [scale, setScale] = useState<Vector2d>({ x: 1, y: 1 });
-    const renders = useRef(0);
 
+    //const renders = useRef(0);
     // renders.current++;
     // if (renders.current % 1 === 0) {
     //     console.log(`${renders.current / 1000}k`);
@@ -45,6 +45,7 @@ export default function TimelineGraph({ persons }: { persons: PersonDTO[] }) {
     };
 
     const onMouseMoved = (e: KonvaEventObject<MouseEvent>) => {
+        e.evt.preventDefault();
         const pointer = stageRef.current.getPointerPosition();
         setMousePos(pointer);
     };
@@ -263,12 +264,14 @@ function getParents(person: PersonDTO, persons: PersonDTO[]): PersonDTO[] {
 }
 
 function getLifespanLengthInPixels(person: PersonDTO): number {
-    const presentYear: number = getCurrentDecimalYear();
+    const presentYear: number = getDecimalYear(new Date());
     const birthYear = person.birthDate.year;
     let endYear = presentYear;
 
     if (person.deathDate) {
-        endYear = person.deathDate.year ?? presentYear;
+        endYear = getDecimalYear(
+            new Date(person.deathDate.year ?? presentYear, person.deathDate.month ?? 0, person.deathDate.day ?? 0)
+        );
     }
 
     const age = endYear - birthYear;
@@ -280,10 +283,8 @@ function getLifespanOffset(birthYear: number, startYear: number): number {
     return ((birthYear - startYear) / resolution) * segmentLength;
 }
 
-function getCurrentDecimalYear(): number {
-    const now = new Date();
-
-    return now.getUTCFullYear() + now.getUTCMonth() / 12 + now.getUTCDay() / 30;
+function getDecimalYear(date: Date): number {
+    return date.getUTCFullYear() + date.getUTCMonth() / 12 + date.getUTCDay() / 365;
 }
 
 function getYearFromMousePosition(startYear: number, x: number, scale: number) {
