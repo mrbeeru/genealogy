@@ -1,4 +1,4 @@
-export const sampleFamily = [
+export const royalFamily = [
     {
         projectId: '6345c0b151be4f7071618c88',
         firstName: 'Elizabeth II',

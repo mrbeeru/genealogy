@@ -18,6 +18,7 @@ export default function Relation({
             {parentsPos.map((p) => (
                 <Circle radius={radius} x={personPos.x} y={p.y + segmentHeight / 2} fill="black"></Circle>
             ))}
+            <Circle radius={radius} x={personPos.x} y={personPos.y} fill="black"></Circle>
             <Line
                 points={[
                     personPos.x,

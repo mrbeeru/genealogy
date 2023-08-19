@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { PersonDTO } from '../dto/PersonDTO';
-import { sampleFamily } from '../mock-data';
+import { royalFamily } from '../mock-data';
 
 export interface IPersonApi {
     getPersons(projectId: string): Promise<PersonDTO[]>;
@@ -17,6 +17,6 @@ export class PersonApi implements IPersonApi {
 
 export class PersonApiMock implements IPersonApi {
     async getPersons(projectId: string): Promise<PersonDTO[]> {
-        return sampleFamily as PersonDTO[];
+        return royalFamily as PersonDTO[];
     }
 }

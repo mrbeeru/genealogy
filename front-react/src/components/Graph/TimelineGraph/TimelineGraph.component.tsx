@@ -1,11 +1,11 @@
 import { KonvaEventObject } from 'konva/lib/Node';
 import { Vector2d } from 'konva/lib/types';
 import { useRef, useState } from 'react';
-import { Group, Layer, Line, Rect, Stage, Text } from 'react-konva';
+import { Group, Layer, Stage } from 'react-konva';
 import { PersonDTO } from '../../../api/dto/PersonDTO';
-import Indicator from './Indicator.component';
 import Lifespan from './Lifespan.component';
 import Relation from './Relation.component';
+import Timeaxis from './Timeaxis.component';
 
 const resolution = 10;
 const segmentLength = 100;
@@ -13,12 +13,14 @@ let yOffset: number = 10;
 
 export default function TimelineGraph({ persons }: { persons: PersonDTO[] }) {
     const stageRef = useRef<any>(null);
-    const startYear = getOldestMemberYear(persons);
-    const origin = getOrigins(persons).sort((x, y) => x.birthDate.year - y.birthDate.year);
 
     const [stagePos, setStagePos] = useState<Vector2d>({ x: 0, y: 0 });
     const [mousePos, setMousePos] = useState<Vector2d>({ x: 0, y: 0 });
     const [scale, setScale] = useState<Vector2d>({ x: 1, y: 1 });
+
+    const startYear = getOldestMemberBirthYear(persons);
+    const endYear = getEndYear(persons);
+    const origin = getOrigins(persons).sort((x, y) => x.birthDate.year - y.birthDate.year);
 
     //const renders = useRef(0);
     // renders.current++;
@@ -27,8 +29,6 @@ export default function TimelineGraph({ persons }: { persons: PersonDTO[] }) {
     // }
 
     const elements = buildGraph(origin[0], persons, new Map<PersonDTO, Vector2d>(), startYear, scale.x);
-
-    const timestamps = buildTimeaxis(startYear, 2023, 100, 10, scale.x);
 
     yOffset = 10;
 
@@ -85,18 +85,15 @@ export default function TimelineGraph({ persons }: { persons: PersonDTO[] }) {
 
     return (
         <>
-            <Stage width={width} height={height + 34} style={{ overflow: 'hidden' }}>
-                <Layer height={34} mouse>
-                    <Rect width={width} height={34} fill="#0001"></Rect>
-                    <Group offset={{ x: -stagePos.x, y: 0 }}>
-                        {timestamps.map((x) => x)}
-                        <Indicator
-                            x={mousePos.x - stagePos.x}
-                            year={getYearFromMousePosition(startYear, mousePos.x - stagePos.x, scale.x)}
-                        ></Indicator>
-                    </Group>
-                </Layer>
-            </Stage>
+            <Timeaxis
+                width={width}
+                height={height}
+                mouseX={mousePos.x}
+                offsetX={stagePos.x}
+                scaleX={scale.x}
+                startYear={startYear}
+                endYear={endYear}
+            ></Timeaxis>
             <Stage
                 style={{ position: 'absolute', top: 34, overflow: 'hidden' }}
                 ref={stageRef}
@@ -192,46 +189,7 @@ function buildGraph(
     return { lifespans: lifespans, relations: relations };
 }
 
-function buildTimeaxis(
-    startYear: number,
-    endYear: number,
-    segmentLength: number,
-    resolution: number,
-    zoom: number
-): React.ReactNode[] {
-    let year = startYear - (startYear % resolution);
-    let iterations = (endYear - startYear) / resolution + 1;
-    let diff = ((startYear % resolution) / resolution) * segmentLength;
-
-    if (zoom < 0.5) {
-        iterations /= 5;
-        segmentLength = 500;
-        resolution = 50;
-        // } else if (zoom < 0.5) {
-        //     iterations /= 2;
-        //     segmentLength = 200;
-        //     resolution = 20;
-    } else if (zoom < 5) {
-    } else if (zoom >= 5) {
-        iterations *= 10;
-        segmentLength = 10;
-        resolution = 1;
-    }
-
-    let elements: React.ReactNode[] = [];
-
-    for (let i = 0; i < iterations; i++) {
-        const x = (i * segmentLength - diff) * zoom;
-        const y = 20;
-
-        elements.push(<Text x={x - 14} y={y} text={`${year + i * resolution}`}></Text>);
-        elements.push(<Line points={[x, 34, x, 1440]} stroke={'#0002'} strokeWidth={1}></Line>);
-    }
-
-    return elements;
-}
-
-function getOldestMemberYear(persons: PersonDTO[]): number {
+function getOldestMemberBirthYear(persons: PersonDTO[]): number {
     let origins = getOrigins(persons);
     let year = Math.min.apply(
         null,
@@ -239,6 +197,14 @@ function getOldestMemberYear(persons: PersonDTO[]): number {
     );
 
     return year;
+}
+
+function getEndYear(persons: PersonDTO[]): number {
+    if (persons.find((x) => !x.deathDate)) {
+        return new Date().getUTCFullYear();
+    }
+
+    return 2040;
 }
 
 function getOrigins(persons: PersonDTO[]): PersonDTO[] {
