@@ -19,13 +19,13 @@ export default function Timeaxis({ width, height, mouseX, offsetX, scaleX, start
     return (
         <Stage width={width} height={height + 34} style={{ overflow: 'hidden' }}>
             <Layer height={34} mouse>
-                <Rect width={width} height={34} fill="#0001"></Rect>
+                <Rect width={width} height={34} fill="#0001" />
                 <Group offset={{ x: -offsetX, y: 0 }}>
                     {timestamps.map((x) => x)}
                     <Indicator
                         x={mouseX - offsetX}
                         year={getYearFromMousePosition(startYear, mouseX - offsetX, scaleX)}
-                    ></Indicator>
+                    />
                 </Group>
             </Layer>
         </Stage>
@@ -39,9 +39,9 @@ function buildTimeaxis(
     resolution: number,
     zoom: number
 ): React.ReactNode[] {
-    let year = startYear - (startYear % resolution);
+    const year = startYear - (startYear % resolution);
     let iterations = (endYear - startYear) / resolution + 1;
-    let diff = ((startYear % resolution) / resolution) * segmentLength;
+    const diff = ((startYear % resolution) / resolution) * segmentLength;
 
     if (zoom < 0.5) {
         iterations /= 5;
@@ -54,17 +54,17 @@ function buildTimeaxis(
         resolution = 1;
     }
 
-    let elements: React.ReactNode[] = [];
+    const elements: React.ReactNode[] = [];
 
     for (let i = 0; i < iterations; i++) {
         const x = (i * segmentLength - diff) * zoom;
         const y = 20;
 
-        //timeaxis years
-        elements.push(<Text x={x - 14} y={y} text={`${year + i * resolution}`}></Text>);
+        // timeaxis years
+        elements.push(<Text x={x - 14} y={y} text={`${year + i * resolution}`} />);
 
-        //timeaxis grid (the vertical lines)
-        elements.push(<Line points={[x, 34, x, 1440]} stroke={'#0002'} strokeWidth={1}></Line>);
+        // timeaxis grid (the vertical lines)
+        elements.push(<Line points={[x, 34, x, 1440]} stroke="#0002" strokeWidth={1} />);
     }
 
     return elements;

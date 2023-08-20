@@ -252,8 +252,3 @@ function getLifespanOffset(birthYear: number, startYear: number): number {
 function getDecimalYear(date: Date): number {
     return date.getUTCFullYear() + date.getUTCMonth() / 12 + date.getUTCDay() / 365;
 }
-
-function getYearFromMousePosition(startYear: number, x: number, scale: number) {
-    const resolution = 10;
-    return startYear + Math.floor(x / (resolution * scale));
-}

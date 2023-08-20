@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { PersonApiMock } from '../../api/controllers/PersonApi';
+import { PersonApiMock } from '../../api/controllers/PersonApiMock';
 import { PersonDTO } from '../../api/dto/PersonDTO';
 import TimelineGraph from './TimelineGraph/TimelineGraph.component';
 
