@@ -1,4 +1,4 @@
-export function measureText(text: string): number {
-    //TODO: improve
+export default function measureText(text: string): number {
+    // TODO: improve
     return text.length * 8;
 }

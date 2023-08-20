@@ -1,6 +1,6 @@
 import { Text as ReactText, Rect } from 'react-konva';
 import { PersonDTO } from '../../../api/dto/PersonDTO';
-import { measureText } from '../../../utils';
+import measureText from '../../../utils';
 
 export interface LifespanProps {
     x: number;

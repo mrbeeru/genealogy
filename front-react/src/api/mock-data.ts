@@ -1,4 +1,4 @@
-export const royalFamily = [
+const royalFamily = [
     {
         projectId: '6345c0b151be4f7071618c88',
         firstName: 'Elizabeth II',
@@ -658,3 +658,5 @@ export const royalFamily = [
         id: '63467c4cf8a63d4e639e10da',
     },
 ];
+
+export default royalFamily;
