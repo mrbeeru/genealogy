@@ -1,4 +1,5 @@
-import { Text as ReactText, Rect } from 'react-konva';
+import { useState } from 'react';
+import { Group, Text as ReactText, Rect } from 'react-konva';
 import { PersonDTO } from '../../../api/dto/PersonDTO';
 import measureText from '../../../utils';
 
@@ -17,31 +18,46 @@ const getPersonAge = (p: PersonDTO) => {
     return deathDate - p.birthDate.year;
 };
 
+const getLifespanStroke = (gender: string) => (gender === 'm' ? '#01A6EAFF' : '#ff666eFF');
+
 export default function Lifespan(props: LifespanProps) {
     const { x, y, width, height, person } = props;
-    const segmentHeight = 20;
-    const textHeight = 10;
     const deathAge = `✟${getPersonAge(person)}`;
-    const textSize = measureText(deathAge);
+    const textSize = measureText(deathAge, 10);
+    const [mouseOver, setMouseOver] = useState(false);
 
     return (
-        <>
-            <Rect x={x} y={y} width={width} height={height} fill={person.gender === 'm' ? '#01A6EA88' : '#ff666e88'} />
+        <Group
+            onMouseEnter={() => {
+                setMouseOver(true);
+            }}
+            onMouseLeave={() => {
+                setMouseOver(false);
+            }}
+        >
+            <Rect
+                x={x}
+                y={y}
+                width={width}
+                height={height}
+                fill={person.gender === 'm' ? '#01A6EA88' : '#ff666e88'}
+                stroke={mouseOver ? getLifespanStroke(person.gender) : ''}
+            />
 
             <ReactText
                 x={x + 4}
-                y={y + (segmentHeight - textHeight) / 2}
+                y={y + (height - measureText('a', 12).height) / 2}
                 text={`${person.lastName} ${person.firstName}`}
             />
 
             {person.deathDate?.year && (
                 <ReactText
-                    x={x + width - textSize}
-                    y={y + 1 + (segmentHeight - textHeight) / 2}
+                    x={x + width - textSize.width}
+                    y={y + 1 + (height - textSize.height) / 2}
                     text={deathAge}
                     fontSize={10}
                 />
             )}
-        </>
+        </Group>
     );
 }

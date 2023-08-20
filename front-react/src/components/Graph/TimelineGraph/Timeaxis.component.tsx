@@ -27,9 +27,9 @@ function buildTimeaxis(
     const diff = ((startYear % res) / res) * segLength;
 
     if (zoom < 0.5) {
-        iterations /= 5;
-        segLength = 500;
-        res = 50;
+        iterations /= 10;
+        segLength = segmentLength * 10;
+        res = resolution * 10;
     } else if (zoom >= 5) {
         iterations *= 10;
         segLength = 10;
@@ -39,11 +39,11 @@ function buildTimeaxis(
     const elements: ReactNode[] = [];
 
     for (let i = 0; i < iterations; i += 1) {
-        const x = (i * segmentLength - diff) * zoom;
+        const x = (i * segLength - diff) * zoom;
         const y = 20;
 
         // timeaxis years
-        elements.push(<Text x={x - 14} y={y} text={`${year + i * resolution}`} />);
+        elements.push(<Text x={x - 14} y={y} text={`${year + i * res}`} />);
 
         // timeaxis grid (the vertical lines)
         elements.push(<Line points={[x, 34, x, 1440]} stroke="#0002" strokeWidth={1} />);

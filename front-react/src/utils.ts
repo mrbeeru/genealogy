@@ -1,4 +1,4 @@
-export default function measureText(text: string): number {
+export default function measureText(text: string, fontSize: number) {
     // TODO: improve
-    return text.length * 8;
+    return { width: text.length * 8, height: (fontSize * 12) / 16 };
 }
