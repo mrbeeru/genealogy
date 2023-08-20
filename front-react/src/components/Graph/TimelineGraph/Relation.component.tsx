@@ -16,9 +16,9 @@ export default function Relation({
     return (
         <>
             {parentsPos.map((p) => (
-                <Circle radius={radius} x={personPos.x} y={p.y + segmentHeight / 2} fill="black"></Circle>
+                <Circle radius={radius} x={personPos.x} y={p.y + segmentHeight / 2} fill="black" />
             ))}
-            <Circle radius={radius} x={personPos.x} y={personPos.y} fill="black"></Circle>
+            <Circle radius={radius} x={personPos.x} y={personPos.y} fill="black" />
             <Line
                 points={[
                     personPos.x,
@@ -28,7 +28,7 @@ export default function Relation({
                 ]}
                 stroke="#0007"
                 strokeWidth={1 / zoom}
-            ></Line>
+            />
         </>
     );
 }

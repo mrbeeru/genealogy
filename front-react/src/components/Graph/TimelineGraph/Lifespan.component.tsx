@@ -10,6 +10,13 @@ export interface LifespanProps {
     person: PersonDTO;
 }
 
+const getPersonAge = (p: PersonDTO) => {
+    const deathDate = p.deathDate?.year || new Date().getUTCFullYear();
+
+    // TODO: account for months and days
+    return deathDate - p.birthDate.year;
+};
+
 export default function Lifespan(props: LifespanProps) {
     const { x, y, width, height, person } = props;
     const segmentHeight = 20;
@@ -19,19 +26,13 @@ export default function Lifespan(props: LifespanProps) {
 
     return (
         <>
-            <Rect
-                x={x}
-                y={y}
-                width={width}
-                height={height}
-                fill={person.gender === 'm' ? '#01A6EA88' : '#ff666e88'}
-            ></Rect>
+            <Rect x={x} y={y} width={width} height={height} fill={person.gender === 'm' ? '#01A6EA88' : '#ff666e88'} />
 
             <ReactText
                 x={x + 4}
                 y={y + (segmentHeight - textHeight) / 2}
                 text={`${person.lastName} ${person.firstName}`}
-            ></ReactText>
+            />
 
             {person.deathDate?.year && (
                 <ReactText
@@ -39,15 +40,8 @@ export default function Lifespan(props: LifespanProps) {
                     y={y + 1 + (segmentHeight - textHeight) / 2}
                     text={deathAge}
                     fontSize={10}
-                ></ReactText>
+                />
             )}
         </>
     );
-}
-
-function getPersonAge(person: PersonDTO) {
-    const deathDate = person.deathDate?.year || new Date().getUTCFullYear();
-
-    //TODO: account for months and days
-    return deathDate - person.birthDate.year;
 }

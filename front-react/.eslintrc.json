@@ -5,8 +5,11 @@
     },
     "extends": [
         "react-app",
-        //"airbnb",
-        "prettier"
+        "airbnb",
+        "prettier",
+        "plugin:import/errors",
+        "plugin:import/warnings",
+        "plugin:import/typescript"
     ],
     "overrides": [
     ],
@@ -27,7 +30,9 @@
          // allow jsx syntax in tsx files
         "react/jsx-filename-extension": [1, { "extensions": [".tsx"] }],
 
-        "no-unused-vars": "off",
-        "@typescript-eslint/no-unused-vars": ["error"]
+        "no-unused-vars": "warn",
+        "@typescript-eslint/no-unused-vars": ["error"],
+        "import/extensions": "off",
+        "class-methods-use-this": "off"
     }
 }
