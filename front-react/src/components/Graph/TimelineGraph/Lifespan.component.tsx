@@ -1,7 +1,19 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Group, Text as ReactText, Rect } from 'react-konva';
 import { PersonDTO } from '../../../api/dto/PersonDTO';
 import measureText from '../../../utils';
+
+interface ILifespanStyle {
+    fillColorMale?: string;
+    fillColorMaleActive?: string;
+    fillColorFemale?: string;
+    fillColorFemaleActive?: string;
+
+    strokeColorMale?: string;
+    strokeColorMaleActive?: string;
+    strokeColorFemale?: string;
+    strokeColorFemaleActive?: string;
+}
 
 export interface LifespanProps {
     x: number;
@@ -9,30 +21,78 @@ export interface LifespanProps {
     width: number;
     height: number;
     person: PersonDTO;
+    style?: ILifespanStyle;
 }
 
-const getPersonAge = (p: PersonDTO) => {
-    const deathDate = p.deathDate?.year || new Date().getUTCFullYear();
+const defaultStyle: ILifespanStyle = {
+    fillColorMale: '#01A6EA88',
+    fillColorFemale: '#ff666e88',
+    fillColorMaleActive: '#01A6EA88',
+    fillColorFemaleActive: '#ff666e88',
 
-    // TODO: account for months and days
-    return deathDate - p.birthDate.year;
+    strokeColorMale: '#01A6EA88',
+    strokeColorMaleActive: '#01A6EAFF',
+    strokeColorFemale: '#ff666e88',
+    strokeColorFemaleActive: '#ff666eFF',
 };
 
-const getLifespanStroke = (gender: string) => (gender === 'm' ? '#01A6EAFF' : '#ff666eFF');
-
-export default function Lifespan(props: LifespanProps) {
-    const { x, y, width, height, person } = props;
-    const deathAge = `✟${getPersonAge(person)}`;
-    const textSize = measureText(deathAge, 10);
+export default function Lifespan({ x, y, width, height, person, style = defaultStyle }: LifespanProps) {
+    const sx = { ...defaultStyle, ...style };
     const [mouseOver, setMouseOver] = useState(false);
+
+    const personAge = useMemo(() => {
+        const deathDate = person.deathDate?.year || new Date().getUTCFullYear();
+
+        // TODO: account for months and days
+        return deathDate - person.birthDate.year;
+    }, [person]);
+
+    const getLifespanStroke = useMemo(() => {
+        if (person.gender === 'm') {
+            return mouseOver ? sx.strokeColorMaleActive : sx.strokeColorMale;
+        }
+        return mouseOver ? sx.strokeColorFemaleActive : sx.strokeColorFemale;
+    }, [
+        person.gender,
+        mouseOver,
+        sx.strokeColorFemaleActive,
+        sx.strokeColorFemale,
+        sx.strokeColorMaleActive,
+        sx.strokeColorMale,
+    ]);
+
+    const getLifespanFill = useMemo(() => {
+        if (person.gender === 'm') {
+            return mouseOver ? sx.fillColorMaleActive : sx.fillColorMale;
+        }
+        return mouseOver ? sx.fillColorFemaleActive : sx.fillColorFemale;
+    }, [
+        person.gender,
+        mouseOver,
+        sx.fillColorFemaleActive,
+        sx.fillColorFemale,
+        sx.fillColorMaleActive,
+        sx.fillColorMale,
+    ]);
+
+    const deathAge = `✟${personAge}`;
+    const deathAgeTextSize = measureText(deathAge, 10);
+    const personName = `${person.lastName} ${person.firstName}`;
+    const personNameTextSize = measureText(personName, 12);
 
     return (
         <Group
-            onMouseEnter={() => {
+            onMouseEnter={(e) => {
                 setMouseOver(true);
+
+                const container = e.target.getStage()?.container();
+                if (container) container.style.cursor = 'pointer';
             }}
-            onMouseLeave={() => {
+            onMouseLeave={(e) => {
                 setMouseOver(false);
+
+                const container = e.target.getStage()?.container();
+                if (container) container.style.cursor = 'default';
             }}
         >
             <Rect
@@ -40,20 +100,17 @@ export default function Lifespan(props: LifespanProps) {
                 y={y}
                 width={width}
                 height={height}
-                fill={person.gender === 'm' ? '#01A6EA88' : '#ff666e88'}
-                stroke={mouseOver ? getLifespanStroke(person.gender) : ''}
+                fill={getLifespanFill}
+                stroke={getLifespanStroke}
+                strokeWidth={1}
             />
 
-            <ReactText
-                x={x + 4}
-                y={y + (height - measureText('a', 12).height) / 2}
-                text={`${person.lastName} ${person.firstName}`}
-            />
+            <ReactText x={x + 4} y={y + (height - personNameTextSize.height) / 2} text={personName} />
 
             {person.deathDate?.year && (
                 <ReactText
-                    x={x + width - textSize.width}
-                    y={y + 1 + (height - textSize.height) / 2}
+                    x={x + width - deathAgeTextSize.width}
+                    y={y + (height - deathAgeTextSize.height) / 2}
                     text={deathAge}
                     fontSize={10}
                 />

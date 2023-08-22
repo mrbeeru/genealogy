@@ -105,7 +105,7 @@ function buildGraph(
 
     // build for spouse
     const spousesLifespan = getSpouses(person, persons).map((spouse) => {
-        yOffset += 20;
+        yOffset += 21;
         alreadyBuilt.set(spouse, { x: getLifespanOffset(spouse.birthDate.year, startYear), y: yOffset });
 
         return (
