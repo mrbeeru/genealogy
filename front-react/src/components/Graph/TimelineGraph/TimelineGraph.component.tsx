@@ -9,6 +9,8 @@ import Timeaxis from './Timeaxis.component';
 
 const resolution = 10;
 const segmentLength = 100;
+const lifespanHeight = 20;
+const descendantSpacing = lifespanHeight + 30;
 
 function getOrigins(persons: PersonDTO[]): PersonDTO[] {
     const origins = persons
@@ -94,7 +96,7 @@ function buildGraph(
             x={getLifespanOffset(person.birthDate.year, params.startYear)}
             y={params.yOffset}
             width={getLifespanLengthInPixels(person)}
-            height={20}
+            height={lifespanHeight}
             person={person}
             key={person.id}
         />
@@ -104,7 +106,7 @@ function buildGraph(
 
     // build for spouse
     const spousesLifespan = getSpouses(person, persons).map((spouse) => {
-        params.yOffset += 21;
+        params.yOffset += lifespanHeight;
         alreadyBuilt.set(spouse, { x: getLifespanOffset(spouse.birthDate.year, params.startYear), y: params.yOffset });
 
         return (
@@ -112,7 +114,7 @@ function buildGraph(
                 x={getLifespanOffset(spouse.birthDate.year, params.startYear)}
                 y={params.yOffset}
                 width={getLifespanLengthInPixels(spouse)}
-                height={20}
+                height={lifespanHeight}
                 person={spouse}
                 key={spouse.id}
             />
@@ -121,7 +123,7 @@ function buildGraph(
 
     lifespans.push(spousesLifespan);
 
-    params.yOffset += 50;
+    params.yOffset += descendantSpacing;
 
     // build relations
     const parents = getParents(person, persons);

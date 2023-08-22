@@ -12,7 +12,7 @@ export interface ITimeaxisProps {
     endYear: number;
 }
 
-function getParams(zoom: number, iterations: number, segmentLength: number, resolution: number) {
+function scaleTimeaxis(zoom: number, iterations: number, segmentLength: number, resolution: number) {
     if (zoom < 0.5) return { iterations: iterations / 10, segmentLength: 1000, resolution: 100 };
     if (zoom >= 5) return { iterations: iterations * 10, segmentLength: 10, resolution: 1 };
 
@@ -30,9 +30,10 @@ function buildTimeaxis(
     resolution: number,
     zoom: number
 ): ReactNode[] {
-    const params = getParams(zoom, (endYear - startYear) / resolution + 1, segmentLength, resolution);
-    const year = startYear - (startYear % params.resolution);
-    const diff = ((startYear % params.resolution) / params.resolution) * params.segmentLength;
+    const params = scaleTimeaxis(zoom, (endYear - startYear) / resolution + 1, segmentLength, resolution);
+    // const diff = ((startYear % resolution) / resolution) * segmentLength;
+    const year = startYear - (startYear % resolution);
+    const diff = ((startYear - year) * params.segmentLength) / params.resolution;
 
     const elements: ReactNode[] = [];
 

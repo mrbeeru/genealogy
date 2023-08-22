@@ -6,7 +6,6 @@ export interface IPersonApi {
 }
 
 export class PersonApi implements IPersonApi {
-    // apiUrl = 'https://mrbeeru.vps.webdock.cloud:10010/api/v1/persons';
     apiUrl = 'http://localhost:10010/api/v1/persons';
 
     async getPersons(projectId: string): Promise<PersonDTO[]> {
