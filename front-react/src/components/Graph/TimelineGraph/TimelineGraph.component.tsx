@@ -9,7 +9,6 @@ import Timeaxis from './Timeaxis.component';
 
 const resolution = 10;
 const segmentLength = 100;
-let yOffset: number = 10;
 
 function getOrigins(persons: PersonDTO[]): PersonDTO[] {
     const origins = persons
@@ -75,13 +74,12 @@ function getLifespanOffset(birthYear: number, startYear: number): number {
     return ((birthYear - startYear) / resolution) * segmentLength;
 }
 
+/* eslint-disable no-param-reassign */
 function buildGraph(
     person: PersonDTO,
     persons: PersonDTO[],
     alreadyBuilt: Map<PersonDTO, Vector2d>,
-    // yOffset: number,
-    startYear: number,
-    zoom: number
+    params: { yOffset: number; startYear: number; zoom: number }
 ): { lifespans: ReactNode[]; relations: ReactNode[] } {
     const lifespans: ReactNode[] = [];
     const relations: ReactNode[] = [];
@@ -93,25 +91,25 @@ function buildGraph(
     // build for current person
     const personLifespan = (
         <Lifespan
-            x={getLifespanOffset(person.birthDate.year, startYear)}
-            y={yOffset}
+            x={getLifespanOffset(person.birthDate.year, params.startYear)}
+            y={params.yOffset}
             width={getLifespanLengthInPixels(person)}
             height={20}
             person={person}
         />
     );
     lifespans.push(personLifespan);
-    alreadyBuilt.set(person, { x: getLifespanOffset(person.birthDate.year, startYear), y: yOffset });
+    alreadyBuilt.set(person, { x: getLifespanOffset(person.birthDate.year, params.startYear), y: params.yOffset });
 
     // build for spouse
     const spousesLifespan = getSpouses(person, persons).map((spouse) => {
-        yOffset += 21;
-        alreadyBuilt.set(spouse, { x: getLifespanOffset(spouse.birthDate.year, startYear), y: yOffset });
+        params.yOffset += 21;
+        alreadyBuilt.set(spouse, { x: getLifespanOffset(spouse.birthDate.year, params.startYear), y: params.yOffset });
 
         return (
             <Lifespan
-                x={getLifespanOffset(spouse.birthDate.year, startYear)}
-                y={yOffset}
+                x={getLifespanOffset(spouse.birthDate.year, params.startYear)}
+                y={params.yOffset}
                 width={getLifespanLengthInPixels(spouse)}
                 height={20}
                 person={spouse}
@@ -121,7 +119,7 @@ function buildGraph(
 
     lifespans.push(spousesLifespan);
 
-    yOffset += 50;
+    params.yOffset += 50;
 
     // build relations
     const parents = getParents(person, persons);
@@ -130,7 +128,7 @@ function buildGraph(
         const parentsPos = parents.map((x) => alreadyBuilt.get(x) as Vector2d).filter((x) => x);
 
         if (personPos && parentsPos && parentsPos.length) {
-            const relation = <Relation personPos={personPos} parentsPos={parentsPos} zoom={zoom} />;
+            const relation = <Relation personPos={personPos} parentsPos={parentsPos} zoom={params.zoom} />;
             relations.push(relation);
         }
     }
@@ -138,13 +136,14 @@ function buildGraph(
     // build for children
     const childrenLifespans = getChildren(person, persons)
         .sort((a, b) => (a.birthDate.year < b.birthDate.year ? 1 : -1))
-        .map((p) => buildGraph(p, persons, alreadyBuilt, startYear, zoom));
+        .map((p) => buildGraph(p, persons, alreadyBuilt, params));
 
     lifespans.push(childrenLifespans.map((x) => x.lifespans));
     relations.push(childrenLifespans.map((x) => x.relations));
 
     return { lifespans, relations };
 }
+/* eslint-enable no-param-reassign */
 
 export default function TimelineGraph({ persons }: { persons: PersonDTO[] }) {
     const stageRef = useRef<any>(null);
@@ -163,9 +162,11 @@ export default function TimelineGraph({ persons }: { persons: PersonDTO[] }) {
     //     console.log(`${renders.current / 1000}k`);
     // }
 
-    const elements = buildGraph(origin[0], persons, new Map<PersonDTO, Vector2d>(), startYear, scale.x);
-
-    yOffset = 10;
+    const elements = buildGraph(origin[0], persons, new Map<PersonDTO, Vector2d>(), {
+        yOffset: 0,
+        zoom: scale.x,
+        startYear,
+    });
 
     const width = 2560;
     const height = 1255;
