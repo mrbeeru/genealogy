@@ -16,7 +16,13 @@ export default function Relation({
     return (
         <>
             {parentsPos.map((p) => (
-                <Circle radius={radius} x={personPos.x} y={p.y + segmentHeight / 2} fill="black" />
+                <Circle
+                    key={1000 * p.x + 100000 * p.y} // TODO: find better
+                    radius={radius}
+                    x={personPos.x}
+                    y={p.y + segmentHeight / 2}
+                    fill="black"
+                />
             ))}
             <Circle radius={radius} x={personPos.x} y={personPos.y} fill="black" />
             <Line

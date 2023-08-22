@@ -12,6 +12,17 @@ export interface ITimeaxisProps {
     endYear: number;
 }
 
+function getParams(zoom: number, iterations: number, segmentLength: number, resolution: number) {
+    if (zoom < 0.5) return { iterations: iterations / 10, segmentLength: 1000, resolution: 100 };
+    if (zoom >= 5) return { iterations: iterations * 10, segmentLength: 10, resolution: 1 };
+
+    return {
+        iterations,
+        segmentLength,
+        resolution,
+    };
+}
+
 function buildTimeaxis(
     startYear: number,
     endYear: number,
@@ -19,34 +30,22 @@ function buildTimeaxis(
     resolution: number,
     zoom: number
 ): ReactNode[] {
-    let segLength = segmentLength;
-    let res = resolution;
-
-    const year = startYear - (startYear % res);
-    let iterations = (endYear - startYear) / res + 1;
-    const diff = ((startYear % res) / res) * segLength;
-
-    if (zoom < 0.5) {
-        iterations /= 10;
-        segLength = segmentLength * 10;
-        res = resolution * 10;
-    } else if (zoom >= 5) {
-        iterations *= 10;
-        segLength = 10;
-        res = 1;
-    }
+    const params = getParams(zoom, (endYear - startYear) / resolution + 1, segmentLength, resolution);
+    const year = startYear - (startYear % params.resolution);
+    const diff = ((startYear % params.resolution) / params.resolution) * params.segmentLength;
 
     const elements: ReactNode[] = [];
 
-    for (let i = 0; i < iterations; i += 1) {
-        const x = (i * segLength - diff) * zoom;
+    for (let i = 0; i < params.iterations; i += 1) {
+        const x = (i * params.segmentLength - diff) * zoom;
         const y = 20;
+        const text = `${year + i * params.resolution}`;
 
         // timeaxis years
-        elements.push(<Text x={x - 14} y={y} text={`${year + i * res}`} />);
+        elements.push(<Text key={text} x={x - 14} y={y} text={text} />);
 
         // timeaxis grid (the vertical lines)
-        elements.push(<Line points={[x, 34, x, 1440]} stroke="#0002" strokeWidth={1} />);
+        elements.push(<Line key={x} points={[x, 34, x, 1440]} stroke="#0002" strokeWidth={1} />);
     }
 
     return elements;

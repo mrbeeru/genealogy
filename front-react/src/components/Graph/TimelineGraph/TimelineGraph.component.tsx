@@ -51,7 +51,7 @@ function getParents(person: PersonDTO, persons: PersonDTO[]): PersonDTO[] {
 }
 
 function getDecimalYear(date: Date): number {
-    return date.getUTCFullYear() + date.getUTCMonth() / 12 + date.getUTCDay() / 365;
+    return date.getUTCFullYear() + date.getUTCMonth() / 12 + date.getUTCDay() / 365.2425;
 }
 
 function getLifespanLengthInPixels(person: PersonDTO): number {
@@ -96,6 +96,7 @@ function buildGraph(
             width={getLifespanLengthInPixels(person)}
             height={20}
             person={person}
+            key={person.id}
         />
     );
     lifespans.push(personLifespan);
@@ -113,6 +114,7 @@ function buildGraph(
                 width={getLifespanLengthInPixels(spouse)}
                 height={20}
                 person={spouse}
+                key={spouse.id}
             />
         );
     });
@@ -128,7 +130,9 @@ function buildGraph(
         const parentsPos = parents.map((x) => alreadyBuilt.get(x) as Vector2d).filter((x) => x);
 
         if (personPos && parentsPos && parentsPos.length) {
-            const relation = <Relation personPos={personPos} parentsPos={parentsPos} zoom={params.zoom} />;
+            const relation = (
+                <Relation key={person.id} personPos={personPos} parentsPos={parentsPos} zoom={params.zoom} />
+            );
             relations.push(relation);
         }
     }
