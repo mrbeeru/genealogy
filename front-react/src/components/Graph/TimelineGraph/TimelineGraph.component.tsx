@@ -153,7 +153,6 @@ function buildGraph(
 
 export default function TimelineGraph({ persons }: { persons: PersonDTO[] }) {
     const stageRef = useRef<any>(null);
-
     const [stagePos, setStagePos] = useState<Vector2d>({ x: 0, y: 0 });
     const [mousePos, setMousePos] = useState<Vector2d>({ x: 0, y: 0 });
     const [scale, setScale] = useState<Vector2d>({ x: 1, y: 1 });

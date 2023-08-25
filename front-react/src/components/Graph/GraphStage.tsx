@@ -1,21 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from 'react-query';
 import PersonApiMock from '../../api/controllers/PersonApiMock';
-import { PersonDTO } from '../../api/dto/PersonDTO';
+import { usePersons, usefamilyStoreActions } from '../../store/FamilyStore';
 import TimelineGraph from './TimelineGraph/TimelineGraph.component';
 
 export default function GraphStage() {
-    const [persons, setPersons] = useState<PersonDTO[]>([]);
+    const persons = usePersons();
+    const familyStoreActions = usefamilyStoreActions();
 
-    useEffect(() => {
-        const personApi = new PersonApiMock();
-        const fn = async () => {
-            const p = await personApi.getPersons('6345c0b151be4f7071618c88');
-            // const persons = await personApi.getPersons('6320bdfc86d047176e1da056');
-            setPersons(p);
-        };
+    const { isLoading, error } = useQuery('personData', async () => {
+        const data = await new PersonApiMock().getPersons('6345c0b151be4f7071618c88');
+        familyStoreActions.setPersons(data);
+        return data;
+    });
 
-        fn();
-    }, []);
+    if (isLoading) return 'Loading...';
+    if (error) return 'Error occured while fetching data.';
 
-    return <> {persons.length && <TimelineGraph persons={persons} />} </>;
+    return <TimelineGraph persons={persons} />;
 }
