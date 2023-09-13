@@ -11,23 +11,19 @@
         "plugin:import/warnings",
         "plugin:import/typescript"
     ],
-    "overrides": [
-    ],
+    "overrides": [],
     "parserOptions": {
         "ecmaVersion": "latest",
         "sourceType": "module"
     },
-    "plugins": [
-        "react",
-        "prettier"
-    ],
+    "plugins": ["react", "prettier"],
     "rules": {
         "prettier/prettier": "error",
 
         // suppress errors for missing 'import React' in files
         "react/react-in-jsx-scope": "off",
 
-         // allow jsx syntax in tsx files
+        // allow jsx syntax in tsx files
         "react/jsx-filename-extension": [1, { "extensions": [".tsx"] }],
 
         "no-unused-vars": "warn",

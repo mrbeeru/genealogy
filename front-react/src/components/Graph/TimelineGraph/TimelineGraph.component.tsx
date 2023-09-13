@@ -76,7 +76,6 @@ function getLifespanOffset(birthYear: number, startYear: number): number {
     return ((birthYear - startYear) / resolution) * segmentLength;
 }
 
-/* eslint-disable no-param-reassign */
 function buildGraph(
     person: PersonDTO,
     persons: PersonDTO[],
@@ -106,6 +105,7 @@ function buildGraph(
 
     // build for spouse
     const spousesLifespan = getSpouses(person, persons).map((spouse) => {
+        // eslint-disable-next-line no-param-reassign
         params.yOffset += lifespanHeight;
         alreadyBuilt.set(spouse, { x: getLifespanOffset(spouse.birthDate.year, params.startYear), y: params.yOffset });
 
@@ -123,6 +123,7 @@ function buildGraph(
 
     lifespans.push(spousesLifespan);
 
+    // eslint-disable-next-line no-param-reassign
     params.yOffset += descendantSpacing;
 
     // build relations
@@ -149,7 +150,6 @@ function buildGraph(
 
     return { lifespans, relations };
 }
-/* eslint-enable no-param-reassign */
 
 export default function TimelineGraph({ persons }: { persons: PersonDTO[] }) {
     const stageRef = useRef<any>(null);
@@ -160,12 +160,6 @@ export default function TimelineGraph({ persons }: { persons: PersonDTO[] }) {
     const startYear = getOldestMemberBirthYear(persons);
     const endYear = getEndYear(persons);
     const origin = getOrigins(persons).sort((x, y) => x.birthDate.year - y.birthDate.year);
-
-    // const renders = useRef(0);
-    // renders.current++;
-    // if (renders.current % 1 === 0) {
-    //     console.log(`${renders.current / 1000}k`);
-    // }
 
     const elements = buildGraph(origin[0], persons, new Map<PersonDTO, Vector2d>(), {
         yOffset: 0,
